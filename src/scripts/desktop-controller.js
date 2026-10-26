@@ -12,6 +12,8 @@ const windowElements = new Map();
 const terminalHistory = [];
 const terminalCommandHistory = [];
 let terminalHistoryIndex = 0;
+let completionMatches = [];
+let completionIndex = -1;
 let browserUrl = '';
 const defaultSpotifyUrl = 'https://open.spotify.com/playlist/37i9dQZF1DWWQRwui0ExPn';
 let spotifyUrl = normalizeSpotifyUrl(localStorage.getItem('portfolio-spotify-url')) || defaultSpotifyUrl;
@@ -31,6 +33,7 @@ let focusedBeforeLauncher = null;
 let drag = null;
 let resize = null;
 let desktopIconsRendered = false;
+const containsHtmlMarkup = (value) => /<\/?[a-z][^>]*>/i.test(value);
 const languageSelects = document.querySelectorAll('.language-select');
 const translations = {
   es: { systemStart: 'Inicio de Arch Linux', startingSession: 'Iniciando sesión gráfica', welcome: 'Bienvenido', signInDesktop: 'Inicia sesión en tu escritorio', username: 'Usuario', password: 'Contraseña', passwordPlaceholder: 'Escribe cualquier contraseña', signIn: 'Iniciar sesión', systemName: 'Arch Linux · Hyprland', appLauncher: 'Lanzador de aplicaciones', searchApps: 'Buscar aplicaciones...', changeLanguage: 'Cambiar idioma', desktopStatus: 'Estado del escritorio', workspaceNav: 'Espacios de trabajo', workspace1: 'Espacio 1', workspace2: 'Espacio 2', workspace3: 'Espacio 3', workspace4: 'Espacio 4', workspaceNames: { 1: 'Espacio personal', 2: 'Proyectos', 3: 'Desarrollo', 4: 'Perfil y contacto' }, dockLabel: 'ESPACIOS', launcherHint: '↑↓ para navegar', launcherOpen: '↵ para abrir' },
@@ -97,7 +100,7 @@ if (startupOverlay) {
   const bootLines = [...bootConsole.querySelectorAll('.boot-log-line')];
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   bootLines.forEach((line, index) => {
-    line.style.animationDelay = reducedMotion ? '0ms' : `${(index * 9300) / Math.max(bootLines.length - 1, 1)}ms`;
+    line.style.animationDelay = reducedMotion ? '0ms' : `${(index * 1700) / Math.max(bootLines.length - 1, 1)}ms`;
   });
   const updateLoginClock = () => {
     if (loginClock) loginClock.textContent = new Intl.DateTimeFormat('es-GT', { hour: '2-digit', minute: '2-digit' }).format(new Date());
@@ -111,7 +114,7 @@ if (startupOverlay) {
       startupOverlay.classList.add('login-ready');
       loginForm.querySelector('#loginPassword').focus({ preventScroll: true });
     }, 420);
-  }, 9580);
+  }, 2000);
   const loginClockInterval = window.setInterval(updateLoginClock, 15000);
   loginForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -296,6 +299,10 @@ function initializeBrowser(element) {
   const external = element.querySelector('#browserExternal');
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (containsHtmlMarkup(address.value)) {
+      hint.textContent = 'No se permite introducir etiquetas HTML.';
+      return;
+    }
     const url = normalizeBrowserUrl(address.value);
     if (!url) {
       hint.textContent = 'Dirección no válida. Usa una URL http o https.';
@@ -348,6 +355,10 @@ function initializeSpotify(element) {
   const hint = element.querySelector('#spotifyHint');
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (containsHtmlMarkup(address.value)) {
+      hint.textContent = 'No se permite introducir etiquetas HTML.';
+      return;
+    }
     const normalized = normalizeSpotifyUrl(address.value);
     if (!normalized) {
       hint.textContent = 'Enlace no válido. Pega un enlace de Spotify o YouTube.';
@@ -655,6 +666,13 @@ document.addEventListener('keydown', (event) => {
   }
   const terminalInput = document.querySelector('#terminalInput');
   if (terminalInput && document.activeElement === terminalInput) {
+    if (completionMatches.length && event.ctrlKey && event.altKey && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
+      event.preventDefault();
+      completionIndex = (completionIndex + (event.key === 'ArrowRight' ? 1 : completionMatches.length - 1)) % completionMatches.length;
+      terminalInput.value = completionMatches[completionIndex];
+      updateTerminalSuggestion();
+      return;
+    }
     if (event.key === 'ArrowUp' && terminalCommandHistory.length) {
       event.preventDefault();
       terminalHistoryIndex = Math.max(0, terminalHistoryIndex - 1);
@@ -743,10 +761,16 @@ function updateEditorMode(message = '') {
 }
 function saveEditorFile() {
   if (!editorState) return;
-  editorState.content = document.querySelector('#editorText')?.value ?? editorState.content;
+  const draft = document.querySelector('#editorText')?.value ?? editorState.content;
+  if (containsHtmlMarkup(draft)) {
+    updateEditorMode('No se guardó: no se permiten etiquetas HTML.');
+    return false;
+  }
+  editorState.content = draft;
   editorFiles.set(editorState.filename, editorState.content);
   editorState.mode = 'normal';
   updateEditorMode(`"${editorState.filename}" written`);
+  return true;
 }
 function openEditor(filename) {
   const validFiles = [...editorFiles.keys()];
@@ -762,7 +786,7 @@ function openEditor(filename) {
   document.querySelector('#editorCommandForm').addEventListener('submit', (event) => {
     event.preventDefault();
     const command = document.querySelector('#editorCommand').value.trim();
-    if (command === 'w' || command === 'wq' || command === 'x') saveEditorFile();
+    if ((command === 'w' || command === 'wq' || command === 'x') && !saveEditorFile()) return;
     if (command === 'q!' || command === 'q') closeEditor(false);
     if (command === 'wq' || command === 'x') closeEditor(true);
     const field = document.querySelector('#editorCommand');
@@ -847,13 +871,132 @@ const commands = {
   whoami: () => `${profile.name} · ${profile.role}`,
   clear: () => null,
   exit: () => null,
-};windowLayer.addEventListener('submit', (event) => {
+};
+
+function terminalCompletions(input) {
+  const trimmed = input.trimStart();
+  const trailingSpace = /\s$/.test(input);
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return Object.keys(commands);
+  if (tokens.length === 1 && !trailingSpace) return Object.keys(commands).filter((name) => name.startsWith(tokens[0].toLowerCase()));
+  const command = tokens[0].toLowerCase();
+  const query = trailingSpace ? '' : (tokens.at(-1) || '').toLowerCase();
+  if (command === 'open') return apps.filter((app) => !app.terminalOnly && !app.external).map((app) => `open ${app.id}`).filter((value) => value.endsWith(' ' + query) || !query);
+  if (command === 'wallpaper') return wallpapers.filter((name) => name.startsWith(query)).map((name) => `wallpaper ${name}`);
+  if (command === 'nvim') return [...editorFiles.keys()].filter((name) => name.startsWith(query)).map((name) => `nvim ${name}`);
+  return [];
+}
+
+function updateTerminalSuggestion() {
+  const suggestion = document.querySelector('#terminalSuggestion');
+  if (!suggestion) return;
+  const input = document.querySelector('#terminalInput');
+  const candidate = completionMatches[completionIndex];
+  const typed = input?.value || '';
+  const suffix = candidate && candidate.toLowerCase().startsWith(typed.toLowerCase())
+    ? candidate.slice(typed.length)
+    : candidate ? `  → ${candidate}` : '';
+  suggestion.textContent = suffix;
+  suggestion.title = candidate ? `Sugerencia ${completionIndex + 1}/${completionMatches.length}: ${candidate}` : '';
+}
+
+function editDistance(left, right) {
+  const row = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= left.length; i++) {
+    let diagonal = row[0]; row[0] = i;
+    for (let j = 1; j <= right.length; j++) {
+      const above = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, diagonal + (left[i - 1] === right[j - 1] ? 0 : 1));
+      diagonal = above;
+    }
+  }
+  return row[right.length];
+}
+
+function suggestCommand(commandName) {
+  const closest = Object.keys(commands).map((name) => ({ name, distance: editDistance(commandName.toLowerCase(), name) })).sort((a, b) => a.distance - b.distance)[0];
+  return closest && closest.distance <= Math.max(1, Math.floor(commandName.length * 0.34)) ? closest.name : '';
+}
+
+windowLayer.addEventListener('keydown', (event) => {
+  const input = event.target;
+  if (input?.id !== 'terminalInput') return;
+  if (event.key === 'Escape') {
+    completionMatches = [];
+    completionIndex = -1;
+    updateTerminalSuggestion();
+    return;
+  }
+  if (event.ctrlKey && event.altKey && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
+    if (!completionMatches.length) completionMatches = terminalCompletions(input.value);
+    if (!completionMatches.length) return;
+    event.preventDefault();
+    completionIndex = (completionIndex + (event.key === 'ArrowRight' ? 1 : completionMatches.length - 1)) % completionMatches.length;
+    input.value = completionMatches[completionIndex];
+    updateTerminalSuggestion();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const matches = terminalCompletions(input.value);
+  if (!matches.length) return;
+  event.preventDefault();
+  completionMatches = matches;
+  completionIndex = -1;
+  const current = input.value.trim();
+  if (matches.length === 1) {
+    const suggestion = matches[0];
+    input.value = `${suggestion} `;
+    completionIndex = 0;
+  } else {
+    const prefix = matches.reduce((common, item) => {
+      let index = 0;
+      while (index < common.length && index < item.length && common[index] === item[index]) index++;
+      return common.slice(0, index);
+    });
+    if (prefix.length > current.length) input.value = prefix;
+    else {
+      const output = document.querySelector('#terminalOutput');
+      const response = document.createElement('pre');
+      response.className = 'command-response';
+      response.textContent = matches.join('    ');
+      output.append(response);
+      output.scrollTop = output.scrollHeight;
+    }
+  }
+  if (completionIndex >= 0) updateTerminalSuggestion();
+  else {
+    completionIndex = 0;
+    updateTerminalSuggestion();
+  }
+});
+
+windowLayer.addEventListener('input', (event) => {
+  if (event.target?.id !== 'terminalInput') return;
+  completionMatches = terminalCompletions(event.target.value);
+  completionIndex = completionMatches.length ? 0 : -1;
+  updateTerminalSuggestion();
+});
+
+windowLayer.addEventListener('submit', (event) => {
   if (event.target.id !== 'terminalForm') return;
   event.preventDefault();
   const input = event.target.querySelector('input');
   const output = document.querySelector('#terminalOutput');
   const command = input.value.trim();
   if (!command) return;
+  completionMatches = [];
+  completionIndex = -1;
+  updateTerminalSuggestion();
+  if (containsHtmlMarkup(command)) {
+    input.value = '';
+    const response = document.createElement('pre');
+    response.className = 'command-response error';
+    response.textContent = 'Entrada bloqueada: no se permite escribir etiquetas HTML en la terminal.';
+    output.append(response, event.target);
+    output.scrollTop = output.scrollHeight;
+    focusTerminalPrompt();
+    return;
+  }
   terminalCommandHistory.push(command);
   terminalHistoryIndex = terminalCommandHistory.length;
   const [commandName, ...args] = command.split(/\s+/);
@@ -893,7 +1036,8 @@ const commands = {
   output.append(entry);
   input.value = '';
 
-  let result = run ? run(args) : `command not found: ${commandName}. Type 'help' for available commands.`;
+  const suggestion = run ? '' : suggestCommand(commandName);
+  let result = run ? run(args) : `command not found: ${commandName}.${suggestion ? `\nDid you mean '${suggestion}${args.length ? ` ${args.join(' ')}` : ''}'?` : " Type 'help' for available commands."}`;
   const action = result && typeof result === 'object' ? result.action : null;
   const responseText = result && typeof result === 'object' ? result.message : result;
   const isError = !run || (typeof responseText === 'string' && responseText.startsWith('Application not found:'));
