@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#101a38"/><stop offset=".52" stop-color="#22335b"/><stop offset="1" stop-color="#315273"/></linearGradient>
+    <linearGradient id="water" x2="0" y2="1"><stop stop-color="#244967"/><stop offset="1" stop-color="#0d1c35"/></linearGradient>
+    <linearGradient id="fuji" x2="0" y2="1"><stop stop-color="#9badc7"/><stop offset=".22" stop-color="#536b8e"/><stop offset="1" stop-color="#293b5c"/></linearGradient>
+    <radialGradient id="moon"><stop stop-color="#f5e7c9" stop-opacity=".24"/><stop offset="1" stop-color="#f5e7c9" stop-opacity="0"/></radialGradient>
+    <linearGradient id="lantern" x2="0" y2="1"><stop stop-color="#ffd999"/><stop offset="1" stop-color="#e78b5e"/></linearGradient>
+    <pattern id="ripples" width="190" height="34" patternUnits="userSpaceOnUse"><path d="M5 8h46m30 13h73m22-14h9M18 31h35m64-21h21" stroke="#a9c3d4" stroke-opacity=".11" stroke-width="2" stroke-linecap="round"/></pattern>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1920v1080H0z"/>
+  <circle cx="1460" cy="230" r="240" fill="url(#moon)"/><circle cx="1460" cy="230" r="56" fill="#f0dfbd" fill-opacity=".82"/>
+  <g fill="#e7edf7" fill-opacity=".72"><circle cx="170" cy="145" r="2"/><circle cx="295" cy="285" r="2"/><circle cx="530" cy="104" r="1.8"/><circle cx="728" cy="225" r="2"/><circle cx="935" cy="112" r="1.5"/><circle cx="1120" cy="286" r="2"/><circle cx="1660" cy="120" r="1.7"/><circle cx="1790" cy="360" r="1.8"/><circle cx="405" cy="410" r="1.5"/><circle cx="132" cy="390" r="1.6"/><circle cx="1010" cy="392" r="1.4"/><circle cx="1840" cy="215" r="1.4"/></g>
+  <path fill="#293d61" fill-opacity=".64" d="m0 536 154-103 86 67 105-141 130 170 130-104 111 126 153-207 111 114 144-158 148 145 138-105 133 153 108-83 119 100v225H0z"/>
+  <path fill="#192d4e" d="m0 662 178-119 123 69 145-134 142 131 122-86 130 138 170-147 127 84 136-122 170 128 113-99 164 100v213H0z"/>
+  <!-- Mount Fuji -->
+  <path fill="url(#fuji)" d="m492 760 180-170 133-140 137-173 135 167 149 155 197 161v131H492z"/>
+  <path fill="#d7deea" fill-opacity=".9" d="m805 450 137-173 135 167-42-23-39 22-43-27-40 31-45-21-34 30-29-20-40 30z"/>
+  <path stroke="#b8c8dd" stroke-opacity=".3" stroke-width="5" d="m604 723 195-117m-83 173 209-164m143 172 151-121m-328-112 112-101"/>
+  <!-- distant shore and pines -->
+  <path fill="#0d2038" d="M0 786q150-57 315 7 148-83 292-3 163-95 308-4 165-87 339 2 185-90 348 0 165-70 318 8v105H0z"/>
+  <g fill="#101e34"><path d="m180 766 52-172 55 172h-32l47 66H145l53-66zM335 786l42-139 46 139h-25l38 56H312l42-56zM1600 781l50-171 52 171h-33l47 64h-139l48-64zM1746 788l42-143 46 143h-26l39 56h-114l39-56z"/></g>
+  <!-- temple silhouette -->
+  <g fill="#101b31" stroke="#455678" stroke-width="3" stroke-linejoin="round">
+    <path d="m1442 670 197-1 61 26h-320zM1459 696h164v113h-164zM1435 809h211v18h-211zM1420 828h243v16h-243z"/>
+    <path d="m1422 674 118-74 119 74-20 10-99-56-99 56zM1480 600l60-39 61 39-14 7-47-26-46 27z"/>
+    <path d="M1510 727h60v82h-60z" fill="#263755"/><path d="M1522 742h15v27h-15zm25 0h14v27h-14zm-25 42h15v25h-15zm25 0h14v25h-14z" fill="url(#lantern)" fill-opacity=".82" stroke="none"/>
+    <path d="M1540 561v-38"/><path d="m1532 532 8-22 8 22z"/>
+  </g>
+  <!-- torii gate -->
+  <g stroke="#c66f70" stroke-linecap="round" stroke-linejoin="round"><path stroke-width="24" d="M280 708v180m190-180v180M250 690q125-29 250 0M265 663q110-27 220 0"/><path stroke="#f0b1a2" stroke-opacity=".5" stroke-width="5" d="M280 708v180m190-180v180M250 690q125-29 250 0"/></g>
+  <!-- lake -->
+  <path fill="url(#water)" d="M0 839q210-32 410 1 243-29 487-1 268-35 523 1 239-28 500 2v238H0z"/><path fill="url(#ripples)" d="M0 850h1920v230H0z"/>
+  <path stroke="#aec2d0" stroke-opacity=".28" stroke-width="3" d="M0 847q230-22 440 4 233-24 452-2 262-26 509 0 241-22 519 3"/>
+  <path fill="#f6c987" fill-opacity=".18" d="M1529 844h21v151h-21zm-37 0h8v102h-8zm68 0h9v126h-9z"/>
+  <!-- cherry branches -->
+  <g stroke="#27263e" stroke-width="15" stroke-linecap="round"><path d="M0 172q100 42 177 130 55 62 114 84m-157-85-31 96m82-40 15 77M1920 118q-110 52-158 139-38 68-108 112m166-116 20 89m-112-4-44 66"/></g>
+  <g fill="#bb789a" fill-opacity=".82"><circle cx="67" cy="203" r="24"/><circle cx="109" cy="221" r="29"/><circle cx="153" cy="249" r="25"/><circle cx="190" cy="280" r="28"/><circle cx="215" cy="323" r="22"/><circle cx="44" cy="265" r="20"/><circle cx="1834" cy="183" r="25"/><circle cx="1794" cy="211" r="28"/><circle cx="1752" cy="247" r="22"/><circle cx="1708" cy="279" r="26"/><circle cx="1669" cy="319" r="20"/><circle cx="1883" cy="245" r="23"/></g>
+  <g fill="#e1a2b3" fill-opacity=".82"><circle cx="81" cy="195" r="9"/><circle cx="129" cy="215" r="10"/><circle cx="169" cy="257" r="8"/><circle cx="1810" cy="200" r="9"/><circle cx="1768" cy="235" r="8"/><circle cx="1689" cy="303" r="8"/></g>
+  <!-- soft atmospheric vignette -->
+  <path fill="#07101f" fill-opacity=".2" d="M0 0h1920v1080H0z"/>
+</svg>

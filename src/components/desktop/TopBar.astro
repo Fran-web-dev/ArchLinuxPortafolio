@@ -1,0 +1,15 @@
+<header class="topbar">
+  <div class="bar-left">
+    <a class="arch-mark" href="#desktop" aria-label="Escritorio Arch Linux" title="Arch Linux"><svg viewBox="0 0 256 256" aria-hidden="true"><path fill="currentColor" d="M128 16 66 145c17-14 37-23 62-24 19-1 36 4 52 13L128 16Zm-12 124c-32 1-58 14-77 35l-22 47h47l21-46c7-15 17-27 31-36Zm37 2c12 10 22 23 30 40l19 40h48l-24-51c-20-20-44-30-73-29Zm-25 22c-13 0-24 7-31 20l-20 42h101l-20-42c-7-13-17-20-30-20Z"/></svg></a>
+    <nav class="workspaces" aria-label="Espacios de trabajo" data-i18n-aria-label="workspaceNav">
+      {[1, 2, 3, 4].map((workspace) => <button class="workspace" data-workspace={workspace} aria-label={`Espacio ${workspace}`} data-i18n-aria-label={`workspace${workspace}`} aria-pressed={workspace === 1}>{workspace}</button>)}
+    </nav>
+  </div>
+  <div class="bar-center"><span class="bar-host">franklin@arch</span><span class="bar-separator">/</span><span id="workspaceName">Personal workspace</span></div>
+  <div class="status" aria-label="Estado del escritorio" data-i18n-aria-label="desktopStatus">
+    <label class="language-switch" for="languageSelect"><span aria-hidden="true">文</span><select id="languageSelect" class="language-select" aria-label="Cambiar idioma" title="Cambiar idioma"><option value="es">ES</option><option value="en">EN</option></select></label>
+    <span class="status-indicator" title="Sesión Hyprland simulada"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></span><span class="status-indicator"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 20 0M5.5 12.3a10 10 0 0 1 13 0M9 15.8a5 5 0 0 1 6 0M12 19h.01"/></svg></span><span class="status-indicator"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Zm12-1a5 5 0 0 1 0 6m2.5-8.5a9 9 0 0 1 0 11"/></svg></span>
+    <time class="clock" id="clock"></time>
+    <button class="launcher-trigger" id="launcherTrigger" aria-label="Abrir lanzador de aplicaciones" title="Buscar aplicaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
+  </div>
+</header>

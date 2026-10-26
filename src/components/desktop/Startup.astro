@@ -1,0 +1,45 @@
+<section class="startup-overlay" id="startupOverlay" aria-label="Inicio de Arch Linux" data-i18n-aria-label="systemStart">
+  <label class="language-switch startup-language" for="loginLanguageSelect"><span aria-hidden="true">文</span><select id="loginLanguageSelect" class="language-select" aria-label="Cambiar idioma" title="Cambiar idioma"><option value="es">ES</option><option value="en">EN</option></select></label>
+  <div class="boot-screen" id="bootScreen" role="status" aria-live="polite">
+    <div class="boot-console" id="bootConsole">
+      <div class="boot-console-heading">Arch Linux 6.12.8-arch1-1 (tty1)</div>
+      <div class="boot-log-line"><time>[  0.184321 ]</time><b>[  OK  ]</b><span>Mounted Kernel Configuration File System.</span></div>
+      <div class="boot-log-line"><time>[  0.592843 ]</time><b>[  OK  ]</b><span>Finished Create list of static device nodes.</span></div>
+      <div class="boot-log-line"><time>[  0.903128 ]</time><b>[  OK  ]</b><span>Started Rule-based Manager for Device Events and Files.</span></div>
+      <div class="boot-log-line"><time>[  1.241905 ]</time><b>[  OK  ]</b><span>Reached target Preparation for Local File Systems.</span></div>
+      <div class="boot-log-line"><time>[  1.608772 ]</time><b>[  OK  ]</b><span>Started Load/Save Screen Backlight Brightness.</span></div>
+      <div class="boot-log-line"><time>[  2.045139 ]</time><b>[  OK  ]</b><span>Reached target Path Units.</span></div>
+      <div class="boot-log-line"><time>[  2.482017 ]</time><b>[  OK  ]</b><span>Started Network Manager.</span></div>
+      <div class="boot-log-line"><time>[  2.831644 ]</time><b>[  OK  ]</b><span>Reached target Network.</span></div>
+      <div class="boot-log-line"><time>[  3.193506 ]</time><b>[  OK  ]</b><span>Started User Login Management.</span></div>
+      <div class="boot-log-line"><time>[  3.649208 ]</time><b>[  OK  ]</b><span>Started Display Manager.</span></div>
+      <div class="boot-log-line"><time>[  4.028633 ]</time><b>[  OK  ]</b><span>Reached target Graphical Interface.</span></div>
+      <div class="boot-log-line"><time>[  4.390184 ]</time><b>[  OK  ]</b><span>Started D-Bus System Message Bus.</span></div>
+      <div class="boot-log-line"><time>[  4.731062 ]</time><b>[  OK  ]</b><span>Started Network Time Synchronization.</span></div>
+      <div class="boot-log-line"><time>[  5.103885 ]</time><b>[  OK  ]</b><span>Reached target System Initialization.</span></div>
+      <div class="boot-log-line"><time>[  5.442637 ]</time><b>[  OK  ]</b><span>Started Daily Cleanup of Temporary Directories.</span></div>
+      <div class="boot-log-line"><time>[  5.816340 ]</time><b>[  OK  ]</b><span>Reached target Basic System.</span></div>
+      <div class="boot-log-line"><time>[  6.204159 ]</time><b>[  OK  ]</b><span>Started User Runtime Directory /run/user/1000.</span></div>
+      <div class="boot-log-line"><time>[  6.590247 ]</time><b>[  OK  ]</b><span>Started User Manager for UID 1000.</span></div>
+      <div class="boot-log-line"><time>[  7.023588 ]</time><b>[  OK  ]</b><span>Starting Hyprland graphical session...</span></div>
+      <div class="boot-log-line"><time>[  7.408132 ]</time><b>[  OK  ]</b><span>Loaded Cascadia Code terminal environment.</span></div>
+      <div class="boot-log-line"><time>[  7.836941 ]</time><b>[  OK  ]</b><span>Started Portfolio desktop services.</span></div>
+      <div class="boot-log-line"><time>[  8.212394 ]</time><b>[  OK  ]</b><span>Restored wallpaper and session preferences.</span></div>
+      <div class="boot-log-line"><time>[  8.679105 ]</time><b>[  OK  ]</b><span>Reached target Multi-User System.</span></div>
+      <div class="boot-log-line"><time>[  9.105736 ]</time><b>[  OK  ]</b><span>Reached target Graphical Interface.</span></div>
+      <div class="boot-console-ready"><span>franklin@arch ~ $</span><i></i></div>
+    </div>
+  </div>
+  <form class="login-screen" id="loginForm" hidden>
+    <div class="login-clock" id="loginClock"></div>
+    <div class="login-avatar" aria-hidden="true">F</div>
+    <h1 data-i18n="welcome">Bienvenido</h1>
+    <p data-i18n="signInDesktop">Inicia sesión en tu escritorio</p>
+    <label for="loginUser" data-i18n="username">Usuario</label>
+    <input id="loginUser" name="username" value="franklin" autocomplete="username" required />
+    <label for="loginPassword" data-i18n="password">Contraseña</label>
+    <input id="loginPassword" name="password" type="password" placeholder="Escribe cualquier contraseña" data-i18n-placeholder="passwordPlaceholder" autocomplete="current-password" required />
+    <button type="submit"><span data-i18n="signIn">Iniciar sesión</span><span aria-hidden="true">→</span></button>
+    <small data-i18n="systemName">Arch Linux · Hyprland</small>
+  </form>
+</section>

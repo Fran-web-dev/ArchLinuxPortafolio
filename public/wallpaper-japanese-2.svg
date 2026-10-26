@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#11192f"/><stop offset=".55" stop-color="#30314c"/><stop offset="1" stop-color="#72505a"/></linearGradient>
+    <linearGradient id="path" x2="0" y2="1"><stop stop-color="#575061"/><stop offset="1" stop-color="#171d31"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#f7bd83" stop-opacity=".9"/><stop offset="1" stop-color="#e98865" stop-opacity="0"/></radialGradient>
+    <linearGradient id="gate" x2="0" y2="1"><stop stop-color="#d67a74"/><stop offset="1" stop-color="#834858"/></linearGradient>
+    <pattern id="rain" width="150" height="220" patternUnits="userSpaceOnUse" patternTransform="skewX(-12)"><path d="M12 0v42m77 20v55m40 38v36m-94-7v44" stroke="#a9c1d8" stroke-opacity=".16" stroke-width="2"/></pattern>
+    <pattern id="stones" width="180" height="88" patternUnits="userSpaceOnUse"><path d="M10 21h40l9 12-6 15H8L0 37zm73-8h54l8 12-9 20H80l-6-13zm-39 46h58l8 15-7 12H38L31 77zm94-2h39l7 12-7 16h-42l-8-13z" fill="#c0a5a2" fill-opacity=".08" stroke="#d0b5af" stroke-opacity=".1" stroke-width="2"/></pattern>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1920v1080H0z"/>
+  <circle cx="1495" cy="260" r="260" fill="url(#glow)"/><circle cx="1495" cy="260" r="62" fill="#f6cfad" fill-opacity=".83"/>
+  <path fill="#20233c" d="M0 0h410l120 181 108-97 156 205 154-180 131 100 111-150 158 167 110-119 162 131V690H0z"/>
+  <path fill="#151c32" d="M0 293 174 89l124 161L426 75l173 245 140-121 131 170 162-227 145 164 147-153 134 185 172-192 130 145v460H0z"/>
+  <g fill="#10192d"><path d="M0 370q175-85 337 18 184-121 344 0 167-107 330 0 165-126 337 0 168-109 355-7 103-42 217-10v370H0z"/></g>
+  <!-- stone approach -->
+  <path fill="url(#path)" d="M686 1080q156-223 184-452h180q28 229 184 452z"/><path fill="url(#stones)" d="M686 1080q156-223 184-452h180q28 229 184 452z"/>
+  <!-- distant vermilion torii -->
+  <g fill="url(#gate)" stroke="#efb194" stroke-opacity=".4" stroke-width="4"><path d="M879 526h162l18 15H861zM886 547h12v107h-12zm136 0h12v107h-12zM864 518h192v12H864z"/></g>
+  <g fill="url(#gate)" stroke="#efb194" stroke-opacity=".45" stroke-width="5"><path d="M696 386h528l-25 22H721zM715 414h18v303h-18zm472 0h18v303h-18zM674 373h572v17H674z"/><path d="M492 238h936l-43 32H535zM532 276h27v510h-27zm829 0h27v510h-27zM458 219h1004v23H458z"/><path d="M246 74h1428l-57 42H303zM292 123h38v803h-38zm1298 0h38v803h-38zM200 50h1520v28H200z"/></g>
+  <!-- lanterns -->
+  <g><path stroke="#c6a6a2" stroke-width="4" d="M368 235v41m1184-41v41M572 408v37m776-37v37M842 555v31m236-31v31"/><path fill="#edaa76" fill-opacity=".92" d="M348 266h40l8 12-8 30h-40l-8-30zm1184 0h40l8 12-8 30h-40l-8-30zM555 434h34l7 10-7 25h-34l-7-25zm776 0h34l7 10-7 25h-34l-7-25zM833 578h26l5 8-5 20h-26l-5-20zm230 0h26l5 8-5 20h-26l-5-20z"/><path fill="#ffcb91" fill-opacity=".65" d="M357 276h23v4h-23zm1184 0h23v4h-23zM562 441h20v4h-20zm776 0h20v4h-20z"/></g>
+  <!-- cedar silhouettes -->
+  <g fill="#101a2d"><path d="m0 714 94-280 91 280h-48l92 146H-42l94-146zm150-59 70-211 69 211h-38l74 120H265l-73-120zm1610 43 87-272 88 272h-48l88 138h-258l89-138zm-169-54 66-206 67 206h-36l72 117h-205l72-117zM116 519l46-142 47 142h-27l49 79H94l48-79zm1565 15 44-137 46 137h-26l47 74h-135l48-74z"/></g>
+  <g fill="#25314a"><path d="m42 737 52-149 48 149m-3-137 29-88 31 88m1580 145 48-145 49 145m-8-128 27-84 29 84"/></g>
+  <!-- wet foreground -->
+  <path fill="#171c30" d="M0 788h1920v292H0z"/><path fill="url(#rain)" d="M0 0h1920v1080H0z"/>
+  <path fill="#f2a879" fill-opacity=".13" d="M934 656h52v424h-52zM714 730h32v350h-32zm458 0h36v350h-36zM375 759h18v321h-18zm1151 0h18v321h-18z"/>
+  <path stroke="#e3b0a1" stroke-opacity=".22" stroke-width="3" d="M842 789h238m-316 50h398m-480 51h564M736 951h449m-527 58h600"/>
+  <!-- maple leaves -->
+  <g fill="#bd6877" fill-opacity=".78"><path d="m143 95 17 27 32-9-17 28 18 22-33-7-15 29-8-32-32-4 25-18-7-31 20 20zm1633 87 17 27 32-9-17 28 18 22-33-7-15 29-8-32-32-4 25-18-7-31 20 20zm-1555 180 12 20 23-7-12 20 13 16-23-5-11 20-6-22-22-3 17-13-5-21 14 14zm1516 62 13 20 23-7-12 20 13 16-24-5-10 20-6-22-23-3 18-13-5-21 13 14z"/></g>
+  <path fill="#07101f" fill-opacity=".25" d="M0 0h1920v1080H0z"/>
+</svg>

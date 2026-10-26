@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TopBar from '../components/desktop/TopBar.astro';
+import Workspace from '../components/desktop/Workspace.astro';
+import Taskbar from '../components/desktop/Taskbar.astro';
+import AppLauncher from '../components/desktop/AppLauncher.astro';
+import Startup from '../components/desktop/Startup.astro';
+import '../styles/desktop.css';
+---
+
+<Layout>
+  <main class="desktop" id="desktop">
+    <TopBar />
+    <Workspace />
+    <Taskbar />
+    <AppLauncher />
+    <Startup />
+  </main>
+  <script>
+    import '../scripts/desktop-controller.js';
+  </script>
+</Layout>
