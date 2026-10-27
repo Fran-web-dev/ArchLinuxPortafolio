@@ -6,8 +6,6 @@ Portfolio interactivo construido con Astro. El chat usa Gemini desde el servidor
 
 ### Asistente de IA
 
-![Chat de Gemini integrado en el portfolio](portfolio-ai-chat.png)
-
 ## Chat con Gemini
 
 1. Genera una clave de Gemini API en [Google AI Studio](https://aistudio.google.com/apikey). Google ofrece una cuota gratuita para modelos seleccionados, con límites que dependen del modelo y la cuenta; revisa los [precios y cuotas vigentes](https://ai.google.dev/gemini-api/docs/pricing).
