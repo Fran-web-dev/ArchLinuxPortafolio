@@ -29,3 +29,9 @@ export const profile = {
 };
 export const aboutText = 'Soy desarrollador frontend enfocado en crear interfaces web modernas, intuitivas y responsivas. Trabajo con React, TypeScript y Tailwind CSS, desarrollando proyectos que combinan una buena experiencia de usuario con código mantenible. Me interesa seguir aprendiendo, colaborar en proyectos de código abierto y construir soluciones que resuelvan problemas reales. Vivo en El Salvador.';
 export const interests = ['Frontend Development', 'React', 'TypeScript', 'UI Engineering', 'Web Development', 'Open Source', 'El Salvador'];
+export const experience = [
+  { organization: 'Hoppscotch', period: 'Ene 2025 – Actual', description: 'Colaboración en un issue relacionado con la sincronización del estado en el frontend, con enfoque en la consistencia del comportamiento de la interfaz y la mantenibilidad del código.', url: 'https://github.com/hoppscotch/hoppscotch/issues/5754' },
+];
+export const education = [
+  { institution: 'ITR', period: '2025 – 2027', program: 'Técnico en Desarrollo de Software' },
+];

@@ -1,4 +1,4 @@
-import { apps, projects, skills, profile, aboutText, interests } from '../data/portfolio.js';
+import { apps, projects, skills, profile, aboutText, interests, experience, education } from '../data/portfolio.js';
 import { renderAppContent } from './window-content.js';
 
 const desktopIcons = document.querySelector('#desktopIcons');
@@ -193,7 +193,7 @@ function openWindow(id) {
   if (!app) return;
   const offset = Math.min(windowState.size * 22, 140);
   const width = id === 'terminal' ? 820 : id === 'browser' ? 900 : id === 'spotify' ? 620 : id === 'about' ? 520 : id === 'projects' ? 680 : 540;
-  const height = id === 'terminal' ? 500 : id === 'browser' ? 620 : id === 'spotify' ? 520 : id === 'about' ? 360 : id === 'projects' ? 440 : 400;
+  const height = id === 'terminal' ? 500 : id === 'browser' ? 620 : id === 'spotify' ? 520 : id === 'about' ? Math.min(600, Math.max(360, innerHeight - 150)) : id === 'projects' ? 440 : 400;
   windowState.set(id, {
     id,
     workspace: app.workspace || activeWorkspace,
@@ -241,7 +241,7 @@ function render() {
       element = document.createElement('article');
       element.className = 'app-window';
       element.dataset.window = id;
-      element.innerHTML = `<header class="window-titlebar" data-drag="${id}"><div class="window-controls"><button class="win-close" aria-label="Cerrar" data-action="close" data-id="${id}"></button><button class="win-min" aria-label="Minimizar" data-action="min" data-id="${id}"></button><button class="win-max" aria-label="Maximizar o restaurar" data-action="max" data-id="${id}"></button></div><span class="window-name">${iconSvg(app.icon, 'title-icon')} ${app.name}</span><span class="window-menu">•••</span></header><div class="window-content">${renderAppContent(id, { profile, aboutText, interests, projects, skills, terminalHistory, browserUrl, spotifyUrl })}</div><div class="resize-handle" data-resize="${id}"></div>`;
+      element.innerHTML = `<header class="window-titlebar" data-drag="${id}"><div class="window-controls"><button class="win-close" aria-label="Cerrar" data-action="close" data-id="${id}"></button><button class="win-min" aria-label="Minimizar" data-action="min" data-id="${id}"></button><button class="win-max" aria-label="Maximizar o restaurar" data-action="max" data-id="${id}"></button></div><span class="window-name">${iconSvg(app.icon, 'title-icon')} ${app.name}</span><span class="window-menu">•••</span></header><div class="window-content">${renderAppContent(id, { profile, aboutText, interests, experience, education, projects, skills, terminalHistory, browserUrl, spotifyUrl })}</div><div class="resize-handle" data-resize="${id}"></div>`;
       windowLayer.append(element);
       windowElements.set(id, element);
       if (id === 'terminal') populateMatrix(element.querySelector('.matrix-field'));
