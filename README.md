@@ -9,7 +9,7 @@ Portfolio personal interactivo con apariencia de escritorio inspirada en Arch Li
 - Escritorio interactivo con ventanas y cuatro espacios de trabajo.
 - Perfil profesional, experiencia, educación, proyectos y habilidades.
 - Terminal con comandos simulados, historial y consultas a Gemini con `ask <pregunta>`.
-- Asistente visual conectado al endpoint `/api/chat`.
+- Asistente visual con Gemini.
 - Aplicaciones simuladas como VS Code y un navegador web.
 - Interfaz disponible en español e inglés y varios fondos de escritorio.
 
@@ -17,7 +17,6 @@ Portfolio personal interactivo con apariencia de escritorio inspirada en Arch Li
 
 - Astro
 - JavaScript y CSS
-- Netlify Functions
 - Gemini API
 
 ## Requisitos
@@ -63,10 +62,10 @@ El modelo predeterminado es `gemini-2.5-flash`. La disponibilidad y las cuotas d
 ## Publicar en Netlify
 
 1. Conecta el repositorio a Netlify y publica la rama `master`.
-2. En las variables de entorno del sitio, configura `GEMINI_API_KEY` para Functions.
-3. Inicia un nuevo despliegue para que la función use la variable.
+2. En las variables de entorno del sitio, configura `GEMINI_API_KEY`.
+3. Inicia un nuevo despliegue para aplicar la variable.
 
-Netlify sirve `netlify/functions/chat.mjs` en `/api/chat`. La clave se mantiene en el servidor y no se envía al navegador.
+La clave se mantiene en la configuración del sitio y no se incluye en el código del navegador ni en el repositorio.
 
 ## Scripts
 
@@ -75,7 +74,7 @@ Netlify sirve `netlify/functions/chat.mjs` en `/api/chat`. La clave se mantiene 
 | `pnpm dev` | Inicia Astro en segundo plano. |
 | `pnpm build` | Genera el sitio en `dist/`. |
 | `pnpm preview` | Previsualiza la compilación de Astro. |
-| `pnpm start` | Sirve `dist/` y el endpoint local `/api/chat`. |
+| `pnpm start` | Sirve localmente la compilación de producción. |
 
 ## Usar la terminal del portfolio
 
