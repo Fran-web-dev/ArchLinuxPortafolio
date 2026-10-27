@@ -10,6 +10,7 @@ const startupOverlay = document.querySelector('#startupOverlay');
 const windowState = new Map();
 const windowElements = new Map();
 const terminalHistory = [];
+const terminalAiHistory = [];
 const terminalCommandHistory = [];
 let terminalHistoryIndex = 0;
 let completionMatches = [];
@@ -134,6 +135,7 @@ const iconPaths = {
   folder: '<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><path d="M3.5 9h17"/>',
   terminal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m5 0h5"/>',
   browser: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
+  vscode: '<path d="m17.8 2.8-9.5 9.1-5-3.8-2.1 1.1v5.6l2.1 1.1 5-3.8 9.5 9.1 4-2V4.8l-4-2Zm0 5.2v8l-4.2-4 4.2-4Z" fill="currentColor" stroke="none"/>',
   spotify: '<path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M7 9c3.6-1 7.8-.6 10.5 1.1M7.8 12c3-.8 6.7-.4 9 1M8.6 15c2.4-.6 5.3-.3 7.2.8"/>',
   code: '<path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-12-2 14"/>',
   github: '<path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 6v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.8a5.3 5.3 0 0 0-1.4-3.7 4.9 4.9 0 0 0-.1-3.7S17.6 1.9 15 3.8a13.4 13.4 0 0 0-7 0C5.4 1.9 4.2 2.2 4.2 2.2a4.9 4.9 0 0 0-.1 3.7 5.3 5.3 0 0 0-1.4 3.7c0 5.3 3.2 6.5 6.2 6.8A3.4 3.4 0 0 0 8 19v3"/>',
@@ -197,8 +199,8 @@ function openWindow(id) {
   const app = apps.find((item) => item.id === id);
   if (!app) return;
   const offset = Math.min(windowState.size * 22, 140);
-  const width = id === 'terminal' ? 820 : id === 'browser' ? 900 : id === 'spotify' ? 620 : id === 'about' ? 520 : id === 'projects' ? 680 : id === 'assistant' ? 560 : 540;
-  const height = id === 'terminal' ? 500 : id === 'browser' ? 620 : id === 'spotify' ? 520 : id === 'about' ? Math.min(600, Math.max(360, innerHeight - 150)) : id === 'projects' ? 440 : id === 'assistant' ? 470 : 400;
+  const width = id === 'terminal' ? 820 : id === 'browser' ? 900 : id === 'vscode' ? 760 : id === 'spotify' ? 620 : id === 'about' ? 520 : id === 'projects' ? 680 : id === 'assistant' ? 560 : 540;
+  const height = id === 'terminal' ? 500 : id === 'browser' ? 620 : id === 'vscode' ? 500 : id === 'spotify' ? 520 : id === 'about' ? Math.min(600, Math.max(360, innerHeight - 150)) : id === 'projects' ? 440 : id === 'assistant' ? 470 : 400;
   windowState.set(id, {
     id,
     workspace: app.workspace || activeWorkspace,
@@ -851,6 +853,34 @@ function closeEditor(save = false) {
   if (form) form.hidden = false;
   render();
 }
+async function askGeminiFromTerminal(question, responseElement, historyEntry) {
+  try {
+    const result = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, history: terminalAiHistory.slice(-10) }),
+    });
+    const contentType = result.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error('El endpoint del asistente no está disponible en este hosting.');
+    }
+    const payload = await result.json();
+    if (!result.ok) throw new Error(payload.error || 'No se pudo conectar con Gemini.');
+    const answer = String(payload.answer || '').trim();
+    if (!answer) throw new Error('Gemini devolvió una respuesta vacía.');
+    terminalAiHistory.push({ role: 'user', content: question }, { role: 'assistant', content: answer });
+    terminalAiHistory.splice(0, terminalAiHistory.length - 10);
+    historyEntry.response = answer;
+    responseElement.textContent = answer;
+  } catch (error) {
+    historyEntry.response = error.message || 'No se pudo conectar con Gemini. Inténtalo de nuevo.';
+    historyEntry.error = true;
+    responseElement.classList.add('error');
+    responseElement.textContent = historyEntry.response;
+  }
+  const output = document.querySelector('#terminalOutput');
+  if (output) output.scrollTop = output.scrollHeight;
+}
 updateClock();
 setInterval(updateClock, 15000);
 
@@ -864,7 +894,15 @@ const commands = {
   pacman: (args) => args[0] === '-Ss' ? `repositorio/archlinux-portfolio 1.0-1\n    Escritorio interactivo y portfolio personal\n\nEste portfolio no instala paquetes: pacman está en modo demostración.` : 'pacman (simulado): prueba pacman -Ss <paquete> para buscar paquetes de ejemplo.',
   yay: (args) => args[0] === '-Ss' ? `aur/archlinux-portfolio 1.0-1\n    Portfolio personal con escritorio Arch Linux\n\nyay está en modo demostración; no instala software.` : 'yay (simulado): prueba yay -Ss <paquete> para buscar paquetes de ejemplo.',
   systemctl: (args) => args[0] === 'status' ? `● portfolio-desktop.service - Portfolio desktop simulation\n   Active: active (running)\n   Main PID: ${Math.floor(performance.now())}\n   CGroup: /user.slice/portfolio` : 'systemctl (simulado): usa systemctl status para ver el estado del escritorio.',
-  ask: (args) => ({ message: 'Abriendo el asistente del portfolio…', action: () => openApp('assistant') }),
+  ask: (args) => {
+    const question = args.join(' ').trim();
+    if (args[0] === '--help' || args[0] === '-h') return `Uso: ask <pregunta>\n\nPregunta a Gemini desde la terminal y conserva el contexto de esta sesión.\nEjemplo: ask ¿Qué proyectos ha creado Franklin?\nSin pregunta, abre el asistente del portfolio.`;
+    if (!question) return { message: 'Abriendo el asistente del portfolio…', action: () => openApp('assistant') };
+    return {
+      message: 'Consultando Gemini…',
+      action: (responseElement, historyEntry) => askGeminiFromTerminal(question, responseElement, historyEntry),
+    };
+  },
   spotify: (args) => {
     if (args[0] === '--help' || args[0] === '-h') return `Uso: spotify [opción]\n\nAbre Spotify dentro del portfolio.\n\nOpciones:\n  --help, -h       Muestra esta ayuda\n  sanctuary ship   Carga Nujabes · Sanctuary Ship\n  lofi girl        Carga la playlist Hip Hop de Lofi Girl\n\nEjemplos:\n  spotify\n  spotify sanctuary ship\n  spotify lofi girl`;
     const query = args.join(' ').trim();
@@ -1095,19 +1133,20 @@ windowLayer.addEventListener('submit', (event) => {
   const action = result && typeof result === 'object' ? result.action : null;
   const responseText = result && typeof result === 'object' ? result.message : result;
   const isError = !run || (typeof responseText === 'string' && responseText.startsWith('Application not found:'));
+  let responseElement = null;
   if (responseText) {
     const response = document.createElement('pre');
     response.className = `command-response${isError ? ' error' : ''}`;
     response.textContent = responseText;
     entry.append(response);
+    responseElement = response;
   }
-  terminalHistory.push({ command, response: responseText || '', error: isError, known: Boolean(run) });
+  const historyEntry = { command, response: responseText || '', error: isError, known: Boolean(run) };
+  terminalHistory.push(historyEntry);
   output.append(event.target);
   output.scrollTop = output.scrollHeight;
 
-  if (action) {
-    action();
-  }
+  if (action) action(responseElement, historyEntry);
   if (!editorState) focusTerminalPrompt();
 });
 

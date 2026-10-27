@@ -4,6 +4,7 @@ export const apps = [
   { id: 'terminal', name: 'Terminal', icon: 'terminal', desc: 'Kitty shell simulator', workspace: 1 },
   { id: 'assistant', name: 'Portfolio AI', icon: 'sparkles', desc: 'Ask about the portfolio', workspace: 1 },
   { id: 'browser', name: 'Browser', icon: 'browser', desc: 'Web browsing', workspace: 3 },
+  { id: 'vscode', name: 'VS Code', icon: 'vscode', desc: 'Code editor & projects', workspace: 3 },
   { id: 'spotify', name: 'Spotify', icon: 'spotify', desc: 'Music player', workspace: 3, terminalOnly: true },
   { id: 'skills', name: 'Skills', icon: 'code', desc: 'Tools & technologies', workspace: 4 },
   { id: 'github', name: 'GitHub', icon: 'github', desc: 'Profile & repositories', workspace: 3 },
