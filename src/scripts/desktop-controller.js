@@ -36,8 +36,8 @@ let desktopIconsRendered = false;
 const containsHtmlMarkup = (value) => /<\/?[a-z][^>]*>/i.test(value);
 const languageSelects = document.querySelectorAll('.language-select');
 const translations = {
-  es: { systemStart: 'Inicio de Arch Linux', startingSession: 'Iniciando sesión gráfica', welcome: 'Bienvenido', signInDesktop: 'Inicia sesión en tu escritorio', username: 'Usuario', password: 'Contraseña', passwordPlaceholder: 'Escribe cualquier contraseña', signIn: 'Iniciar sesión', systemName: 'Arch Linux · Hyprland', appLauncher: 'Lanzador de aplicaciones', searchApps: 'Buscar aplicaciones...', changeLanguage: 'Cambiar idioma', desktopStatus: 'Estado del escritorio', workspaceNav: 'Espacios de trabajo', workspace1: 'Espacio 1', workspace2: 'Espacio 2', workspace3: 'Espacio 3', workspace4: 'Espacio 4', workspaceNames: { 1: 'Espacio personal', 2: 'Proyectos', 3: 'Desarrollo', 4: 'Perfil y contacto' }, dockLabel: 'ESPACIOS', launcherHint: '↑↓ para navegar', launcherOpen: '↵ para abrir' },
-  en: { systemStart: 'Arch Linux startup', startingSession: 'Starting graphical session', welcome: 'Welcome', signInDesktop: 'Sign in to your desktop', username: 'Username', password: 'Password', passwordPlaceholder: 'Enter any password', signIn: 'Sign in', systemName: 'Arch Linux · Hyprland', appLauncher: 'Application launcher', searchApps: 'Search apps...', changeLanguage: 'Change language', desktopStatus: 'Desktop status', workspaceNav: 'Workspaces', workspace1: 'Workspace 1', workspace2: 'Workspace 2', workspace3: 'Workspace 3', workspace4: 'Workspace 4', workspaceNames: { 1: 'Personal workspace', 2: 'Projects', 3: 'Development', 4: 'Profile & contact' }, dockLabel: 'WORKSPACES', launcherHint: '↑↓ to navigate', launcherOpen: '↵ to open' },
+  es: { systemStart: 'Inicio de Arch Linux', startingSession: 'Iniciando sesión gráfica', welcome: 'Bienvenido', signInDesktop: 'Iniciando tu escritorio', username: 'Usuario', password: 'Contraseña', passwordPlaceholder: 'Escribe cualquier contraseña', signIn: 'Iniciar sesión', systemName: 'Arch Linux · Hyprland', appLauncher: 'Lanzador de aplicaciones', searchApps: 'Buscar aplicaciones...', changeLanguage: 'Cambiar idioma', desktopStatus: 'Estado del escritorio', workspaceNav: 'Espacios de trabajo', workspace1: 'Espacio 1', workspace2: 'Espacio 2', workspace3: 'Espacio 3', workspace4: 'Espacio 4', workspaceNames: { 1: 'Espacio personal', 2: 'Proyectos', 3: 'Desarrollo', 4: 'Perfil y contacto' }, dockLabel: 'ESPACIOS', launcherHint: '↑↓ para navegar', launcherOpen: '↵ para abrir' },
+  en: { systemStart: 'Arch Linux startup', startingSession: 'Starting graphical session', welcome: 'Welcome', signInDesktop: 'Starting your desktop', username: 'Username', password: 'Password', passwordPlaceholder: 'Enter any password', signIn: 'Sign in', systemName: 'Arch Linux · Hyprland', appLauncher: 'Application launcher', searchApps: 'Search apps...', changeLanguage: 'Change language', desktopStatus: 'Desktop status', workspaceNav: 'Workspaces', workspace1: 'Workspace 1', workspace2: 'Workspace 2', workspace3: 'Workspace 3', workspace4: 'Workspace 4', workspaceNames: { 1: 'Personal workspace', 2: 'Projects', 3: 'Development', 4: 'Profile & contact' }, dockLabel: 'WORKSPACES', launcherHint: '↑↓ to navigate', launcherOpen: '↵ to open' },
 };
 let currentLanguage = localStorage.getItem('portfolio-language') === 'en' ? 'en' : 'es';
 function applyLanguage(language) {
@@ -56,6 +56,11 @@ function applyLanguage(language) {
     const text = translations[currentLanguage][element.dataset.i18nAriaLabel];
     if (text) element.setAttribute('aria-label', text);
   });
+  document.querySelectorAll('.workspace').forEach((button) => button.classList.toggle('active', Number(button.dataset.workspace) === activeWorkspace));
+  document.querySelectorAll('.workspace').forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.workspace) === activeWorkspace)));
+  const activeApp = [...windowState.values()].find((item) => item.workspace === activeWorkspace && !item.minimized);
+  const waybarState = document.querySelector('#waybarWindowState');
+  if (waybarState) waybarState.textContent = activeApp ? (apps.find((app) => app.id === activeApp.id)?.name || 'hyprland').toLowerCase() : 'hyprland';
   const workspaceName = document.querySelector('#workspaceName');
   if (workspaceName) workspaceName.textContent = translations[currentLanguage].workspaceNames[activeWorkspace];
   languageSelects.forEach((select) => {
@@ -112,19 +117,19 @@ if (startupOverlay) {
       loginForm.hidden = false;
       updateLoginClock();
       startupOverlay.classList.add('login-ready');
-      loginForm.querySelector('#loginPassword').focus({ preventScroll: true });
+      loginForm.classList.add('login-authenticating');
+      window.setTimeout(() => {
+        startupOverlay.classList.add('startup-exit');
+        window.setTimeout(() => startupOverlay.remove(), 380);
+      }, reducedMotion ? 350 : 1700);
     }, 420);
   }, 2000);
   const loginClockInterval = window.setInterval(updateLoginClock, 15000);
-  loginForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    window.clearInterval(loginClockInterval);
-    startupOverlay.classList.add('startup-exit');
-    window.setTimeout(() => startupOverlay.remove(), 380);
-  });
+  void loginClockInterval;
 }
 
 const iconPaths = {
+  sparkles: '<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 14 1.1 2.9L23 18l-2.9 1.1L19 22l-1.1-2.9L15 18l2.9-1.1L19 14ZM5 2l.8 2.2L8 5l-2.2.8L5 8l-.8-2.2L2 5l2.2-.8L5 2Z"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   folder: '<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><path d="M3.5 9h17"/>',
   terminal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m5 0h5"/>',
@@ -192,8 +197,8 @@ function openWindow(id) {
   const app = apps.find((item) => item.id === id);
   if (!app) return;
   const offset = Math.min(windowState.size * 22, 140);
-  const width = id === 'terminal' ? 820 : id === 'browser' ? 900 : id === 'spotify' ? 620 : id === 'about' ? 520 : id === 'projects' ? 680 : 540;
-  const height = id === 'terminal' ? 500 : id === 'browser' ? 620 : id === 'spotify' ? 520 : id === 'about' ? Math.min(600, Math.max(360, innerHeight - 150)) : id === 'projects' ? 440 : 400;
+  const width = id === 'terminal' ? 820 : id === 'browser' ? 900 : id === 'spotify' ? 620 : id === 'about' ? 520 : id === 'projects' ? 680 : id === 'assistant' ? 560 : 540;
+  const height = id === 'terminal' ? 500 : id === 'browser' ? 620 : id === 'spotify' ? 520 : id === 'about' ? Math.min(600, Math.max(360, innerHeight - 150)) : id === 'projects' ? 440 : id === 'assistant' ? 470 : 400;
   windowState.set(id, {
     id,
     workspace: app.workspace || activeWorkspace,
@@ -248,6 +253,7 @@ function render() {
       if (id === 'browser') initializeBrowser(element);
       if (id === 'spotify') initializeSpotify(element);
       if (id === 'github') initializeGithub(element);
+      if (id === 'assistant') initializeAssistant(element);
       element.addEventListener('pointerdown', () => focusWindow(id));
     }
     element.hidden = current.workspace !== activeWorkspace || current.minimized;
@@ -278,6 +284,46 @@ function focusTerminalPrompt() {
   requestAnimationFrame(() => {
     const input = windowLayer.querySelector('[data-window="terminal"] #terminalInput');
     if (input && !input.disabled) input.focus({ preventScroll: true });
+  });
+}
+
+function initializeAssistant(element) {
+  const form = element.querySelector('#assistantForm');
+  const input = element.querySelector('#assistantInput');
+  const messages = element.querySelector('#assistantMessages');
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+    const user = document.createElement('article');
+    user.className = 'assistant-message assistant-user';
+    const userText = document.createElement('p');
+    userText.textContent = question;
+    user.append(userText);
+    const history = [...messages.querySelectorAll('.assistant-message')].slice(-10).map((item) => ({ role: item.classList.contains('assistant-user') ? 'user' : 'assistant', content: item.querySelector('p')?.textContent || '' }));
+    input.value = '';
+    const bot = document.createElement('article');
+    bot.className = 'assistant-message assistant-bot';
+    const name = document.createElement('b');
+    name.textContent = 'Gemini';
+    const response = document.createElement('p');
+    response.textContent = 'Pensando…';
+    bot.append(name, response);
+    messages.append(user, bot);
+    messages.scrollTop = messages.scrollHeight;
+    fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, history }) })
+      .then(async (result) => {
+        const contentType = result.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          throw new Error('El servidor del chat no está disponible en este hosting. Este portfolio necesita ejecutarse con Node.js y el endpoint /api/chat habilitado.');
+        }
+        const payload = await result.json();
+        if (!result.ok) throw new Error(payload.error || 'No se pudo conectar con Gemini.');
+        return payload.answer;
+      })
+      .then((answer) => { response.textContent = answer; })
+      .catch((error) => { response.textContent = error.message || 'No se pudo conectar con Gemini. Inténtalo de nuevo.'; bot.classList.add('assistant-error'); })
+      .finally(() => { messages.scrollTop = messages.scrollHeight; });
   });
 }
 
@@ -541,7 +587,6 @@ document.querySelector('.workspaces').addEventListener('click', (event) => {
   const button = event.target.closest('[data-workspace]');
   if (button) switchWorkspace(Number(button.dataset.workspace));
 });
-
 windowLayer.addEventListener('click', (event) => {
   const button = event.target.closest('[data-action]');
   if (button) {
@@ -810,7 +855,16 @@ updateClock();
 setInterval(updateClock, 15000);
 
 const commands = {
-  help: () => 'Available: help · ls · apps · workspaces · workspace <1-4> · windows · open <app> · browser [url] · spotify [--help|búsqueda] · wallpaper [sakura|koi|ukiyo-e|tokyo] · about · projects · skills · github · contact · neofetch · nvim <file> · clear · date · whoami · exit',
+  help: () => 'Comandos: help, ls, pwd, whoami, uname, neofetch, date, cal, clear, history, pacman, yay, systemctl, fastfetch, apps, open <app>, windows, workspaces, workspace <1-4>, browser [url], spotify [búsqueda], wallpaper [tema], about, projects, skills, github, contact, ask <pregunta>, nvim <archivo>, exit. Comandos de sistema simulados para este portfolio.',
+  pwd: () => '/home/franklin/portfolio',
+  uname: (args) => args.includes('-a') ? 'Linux arch 6.12.8-arch1-1 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux (simulado)' : 'Linux',
+  fastfetch: () => ` ${profile.name}\nOS: Arch Linux (simulado)\nHost: portfolio web\nKernel: 6.12.8-arch1-1\nShell: zsh portfolio-shell\nWM: Hyprland-inspired`,
+  cal: () => new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(new Date()),
+  history: () => terminalCommandHistory.map((item, index) => ` ${index + 1}  ${item}`).join('\n') || 'El historial está vacío.',
+  pacman: (args) => args[0] === '-Ss' ? `repositorio/archlinux-portfolio 1.0-1\n    Escritorio interactivo y portfolio personal\n\nEste portfolio no instala paquetes: pacman está en modo demostración.` : 'pacman (simulado): prueba pacman -Ss <paquete> para buscar paquetes de ejemplo.',
+  yay: (args) => args[0] === '-Ss' ? `aur/archlinux-portfolio 1.0-1\n    Portfolio personal con escritorio Arch Linux\n\nyay está en modo demostración; no instala software.` : 'yay (simulado): prueba yay -Ss <paquete> para buscar paquetes de ejemplo.',
+  systemctl: (args) => args[0] === 'status' ? `● portfolio-desktop.service - Portfolio desktop simulation\n   Active: active (running)\n   Main PID: ${Math.floor(performance.now())}\n   CGroup: /user.slice/portfolio` : 'systemctl (simulado): usa systemctl status para ver el estado del escritorio.',
+  ask: (args) => ({ message: 'Abriendo el asistente del portfolio…', action: () => openApp('assistant') }),
   spotify: (args) => {
     if (args[0] === '--help' || args[0] === '-h') return `Uso: spotify [opción]\n\nAbre Spotify dentro del portfolio.\n\nOpciones:\n  --help, -h       Muestra esta ayuda\n  sanctuary ship   Carga Nujabes · Sanctuary Ship\n  lofi girl        Carga la playlist Hip Hop de Lofi Girl\n\nEjemplos:\n  spotify\n  spotify sanctuary ship\n  spotify lofi girl`;
     const query = args.join(' ').trim();

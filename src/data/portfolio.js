@@ -2,6 +2,7 @@ export const apps = [
   { id: 'about', name: 'About Me', icon: 'user', desc: 'Identity & profile', workspace: 1 },
   { id: 'projects', name: 'Projects', icon: 'folder', desc: 'Selected work', workspace: 2 },
   { id: 'terminal', name: 'Terminal', icon: 'terminal', desc: 'Kitty shell simulator', workspace: 1 },
+  { id: 'assistant', name: 'Portfolio AI', icon: 'sparkles', desc: 'Ask about the portfolio', workspace: 1 },
   { id: 'browser', name: 'Browser', icon: 'browser', desc: 'Web browsing', workspace: 3 },
   { id: 'spotify', name: 'Spotify', icon: 'spotify', desc: 'Music player', workspace: 3, terminalOnly: true },
   { id: 'skills', name: 'Skills', icon: 'code', desc: 'Tools & technologies', workspace: 4 },

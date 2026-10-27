@@ -30,16 +30,14 @@
       <div class="boot-console-ready"><span>franklin@arch ~ $</span><i></i></div>
     </div>
   </div>
-  <form class="login-screen" id="loginForm" hidden>
+  <section class="login-screen" id="loginForm" aria-label="Inicio de sesión automático" hidden>
     <div class="login-clock" id="loginClock"></div>
     <div class="login-avatar" aria-hidden="true">F</div>
     <h1 data-i18n="welcome">Bienvenido</h1>
-    <p data-i18n="signInDesktop">Inicia sesión en tu escritorio</p>
-    <label for="loginUser" data-i18n="username">Usuario</label>
-    <input id="loginUser" name="username" value="franklin" autocomplete="username" required />
-    <label for="loginPassword" data-i18n="password">Contraseña</label>
-    <input id="loginPassword" name="password" type="password" placeholder="Escribe cualquier contraseña" data-i18n-placeholder="passwordPlaceholder" autocomplete="current-password" required />
-    <button type="submit"><span data-i18n="signIn">Iniciar sesión</span><span aria-hidden="true">→</span></button>
+    <p data-i18n="signInDesktop">Iniciando tu escritorio</p>
+    <div class="login-user-chip"><span class="login-user-dot"></span><span>franklin@arch</span><span class="login-check">✓</span></div>
+    <div class="login-progress"><i></i></div>
+    <small class="login-status">Cargando Hyprland y el portfolio…</small>
     <small data-i18n="systemName">Arch Linux · Hyprland</small>
-  </form>
+  </section>
 </section>

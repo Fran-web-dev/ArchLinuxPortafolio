@@ -1,46 +1,20 @@
-# Astro Starter Kit: Basics
+# Arch Linux Portfolio
 
-```sh
-npm create astro@latest -- --template basics
-```
+Portfolio interactivo construido con Astro. El chat usa Gemini desde el servidor, por lo que la clave no se envía al navegador.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Chat con Gemini
 
-## 🚀 Project Structure
+1. Genera una clave de Gemini API en [Google AI Studio](https://aistudio.google.com/apikey). Google ofrece una cuota gratuita para modelos seleccionados, con límites que dependen del modelo y la cuenta; revisa los [precios y cuotas vigentes](https://ai.google.dev/gemini-api/docs/pricing).
+2. Configura `GEMINI_API_KEY` en el entorno del servidor. Para desarrollo local, copia `.env.example` a `.env`; `.env` está excluido de Git.
+3. Ejecuta `npm run build` y luego `npm start`. El servidor escucha en el puerto `4321` de forma predeterminada; `PORT` permite cambiarlo.
+4. Despliega en un host que ejecute Node.js y guarda allí `GEMINI_API_KEY` como secreto. GitHub Pages, que solo sirve archivos estáticos, no puede ejecutar el endpoint del chat.
 
-Inside of your Astro project, you'll see the following folders and files:
+El modelo predeterminado es `gemini-2.5-flash`. Puedes cambiarlo mediante `GEMINI_MODEL` por otro modelo habilitado en tu cuenta. `npm start` usa el almacén de certificados de confianza del sistema para la conexión HTTPS.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+## Comandos
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+- `npm run dev`: inicia Astro en segundo plano.
+- `npm run build`: genera el sitio en `dist/`.
+- `npm start`: sirve `dist/` y el endpoint `/api/chat`.
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Para probar el chat localmente, compila primero y ejecuta el servidor Node con `GEMINI_API_KEY` configurada.

@@ -9,6 +9,7 @@
     "dev": "astro dev --background",
     "build": "astro build",
     "preview": "astro preview",
+    "start": "node --use-system-ca server.mjs",
     "astro": "astro"
   },
   "dependencies": {
