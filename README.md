@@ -21,7 +21,7 @@
 
 Este portfolio presenta el perfil, la experiencia y los proyectos de **Franklin Villanueva**, desarrollador frontend de Honduras. La interfaz recrea un escritorio inspirado en Arch Linux y Hyprland: las secciones aparecen como aplicaciones en ventanas, distribuidas en cuatro espacios de trabajo.
 
-La experiencia funciona en español e inglés y se adapta a pantallas pequeñas. Está construida con Astro, JavaScript y CSS; algunas funciones de IA se conectan con Google Gemini desde el servidor.
+La experiencia funciona en español e inglés y se adapta a pantallas pequeñas. Está construida con Astro, JavaScript y CSS, e integra Google Gemini en el asistente y la terminal.
 
 ## Explora el escritorio
 
@@ -60,16 +60,6 @@ pnpm build
 pnpm start
 ```
 
-## Configurar Gemini (opcional)
-
-Para habilitar las respuestas de Gemini localmente, crea un archivo `.env` en la raíz:
-
-```env
-GEMINI_API_KEY=tu_clave_de_gemini
-```
-
-La clave se usa en el servidor y `.env` está excluido de Git. El modelo predeterminado es `gemini-2.5-flash`; la disponibilidad y las cuotas dependen de tu cuenta. Consulta la [documentación de Gemini](https://ai.google.dev/gemini-api/docs) y sus [precios](https://ai.google.dev/gemini-api/docs/pricing).
-
 ## Comandos
 
 | Comando | Acción |
@@ -79,11 +69,11 @@ La clave se usa en el servidor y `.env` está excluido de Git. El modelo predete
 | `pnpm preview` | Previsualiza la compilación de Astro. |
 | `pnpm start` | Sirve localmente la compilación de producción. |
 
-En la terminal del portfolio, ejecuta `help` para ver los comandos. Escribe `ask ¿Qué proyectos ha creado Franklin?` para enviar una pregunta a Gemini.
+Prueba el [portfolio desplegado](https://archlinux-portafolio.netlify.app/) para usar el asistente Gemini o explorar la terminal. Allí, ejecuta `help` para ver los comandos y `ask ¿Qué proyectos ha creado Franklin?` para hacer una consulta.
 
 ## Publicación
 
-El sitio se publica en [Netlify](https://archlinux-portafolio.netlify.app/). Para desplegar tu propia copia, conecta el repositorio a Netlify y configura `GEMINI_API_KEY` en las variables de entorno del sitio si quieres habilitar el asistente.
+El sitio está publicado en [Netlify](https://archlinux-portafolio.netlify.app/). Puedes abrirlo y probar sus funciones directamente.
 
 ## Tecnologías
 
