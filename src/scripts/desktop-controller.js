@@ -1,4 +1,5 @@
 import { apps, projects, skills, profile, aboutText, interests, experience, education } from '../data/portfolio.js';
+import { getLocale, locales } from '../data/locales.js';
 import { renderAppContent } from './window-content.js';
 
 const desktopIcons = document.querySelector('#desktopIcons');
@@ -36,15 +37,15 @@ let resize = null;
 let desktopIconsRendered = false;
 const containsHtmlMarkup = (value) => /<\/?[a-z][^>]*>/i.test(value);
 const languageSelects = document.querySelectorAll('.language-select');
-const translations = {
-  es: { systemStart: 'Inicio de Arch Linux', startingSession: 'Iniciando sesión gráfica', welcome: 'Bienvenido', signInDesktop: 'Iniciando tu escritorio', username: 'Usuario', password: 'Contraseña', passwordPlaceholder: 'Escribe cualquier contraseña', signIn: 'Iniciar sesión', systemName: 'Arch Linux · Hyprland', appLauncher: 'Lanzador de aplicaciones', searchApps: 'Buscar aplicaciones...', changeLanguage: 'Cambiar idioma', desktopStatus: 'Estado del escritorio', workspaceNav: 'Espacios de trabajo', workspace1: 'Espacio 1', workspace2: 'Espacio 2', workspace3: 'Espacio 3', workspace4: 'Espacio 4', workspaceNames: { 1: 'Espacio personal', 2: 'Proyectos', 3: 'Desarrollo', 4: 'Perfil y contacto' }, dockLabel: 'ESPACIOS', launcherHint: '↑↓ para navegar', launcherOpen: '↵ para abrir' },
-  en: { systemStart: 'Arch Linux startup', startingSession: 'Starting graphical session', welcome: 'Welcome', signInDesktop: 'Starting your desktop', username: 'Username', password: 'Password', passwordPlaceholder: 'Enter any password', signIn: 'Sign in', systemName: 'Arch Linux · Hyprland', appLauncher: 'Application launcher', searchApps: 'Search apps...', changeLanguage: 'Change language', desktopStatus: 'Desktop status', workspaceNav: 'Workspaces', workspace1: 'Workspace 1', workspace2: 'Workspace 2', workspace3: 'Workspace 3', workspace4: 'Workspace 4', workspaceNames: { 1: 'Personal workspace', 2: 'Projects', 3: 'Development', 4: 'Profile & contact' }, dockLabel: 'WORKSPACES', launcherHint: '↑↓ to navigate', launcherOpen: '↵ to open' },
-};
+const translations = locales;
 let currentLanguage = localStorage.getItem('portfolio-language') === 'en' ? 'en' : 'es';
 function applyLanguage(language) {
   currentLanguage = language === 'en' ? 'en' : 'es';
   localStorage.setItem('portfolio-language', currentLanguage);
   document.documentElement.lang = currentLanguage;
+  document.title = translations[currentLanguage].pageTitle;
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) metaDescription.content = translations[currentLanguage].pageDescription;
   document.querySelectorAll('[data-i18n]').forEach((element) => {
     const text = translations[currentLanguage][element.dataset.i18n];
     if (text) element.textContent = text;
@@ -57,11 +58,19 @@ function applyLanguage(language) {
     const text = translations[currentLanguage][element.dataset.i18nAriaLabel];
     if (text) element.setAttribute('aria-label', text);
   });
+  document.querySelectorAll('[data-i18n-title]').forEach((element) => {
+    const text = translations[currentLanguage][element.dataset.i18nTitle];
+    if (text) element.title = text;
+  });
+  document.querySelectorAll('[data-boot-line]').forEach((element) => {
+    const text = translations[currentLanguage].bootLines[Number(element.dataset.bootLine)];
+    if (text) element.textContent = text;
+  });
   document.querySelectorAll('.workspace').forEach((button) => button.classList.toggle('active', Number(button.dataset.workspace) === activeWorkspace));
   document.querySelectorAll('.workspace').forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.workspace) === activeWorkspace)));
   const activeApp = [...windowState.values()].find((item) => item.workspace === activeWorkspace && !item.minimized);
   const waybarState = document.querySelector('#waybarWindowState');
-  if (waybarState) waybarState.textContent = activeApp ? (apps.find((app) => app.id === activeApp.id)?.name || 'hyprland').toLowerCase() : 'hyprland';
+  if (waybarState) waybarState.textContent = activeApp ? (localizedApp(apps.find((app) => app.id === activeApp.id) || { id: '', name: 'hyprland' }).name).toLowerCase() : 'hyprland';
   const workspaceName = document.querySelector('#workspaceName');
   if (workspaceName) workspaceName.textContent = translations[currentLanguage].workspaceNames[activeWorkspace];
   languageSelects.forEach((select) => {
@@ -69,6 +78,17 @@ function applyLanguage(language) {
     select.setAttribute('aria-label', translations[currentLanguage].changeLanguage);
     select.title = translations[currentLanguage].changeLanguage;
   });
+  const loginStatus = startupOverlay?.querySelector('.login-status');
+  if (loginStatus) loginStatus.textContent = translations[currentLanguage].loginStatus;
+  const loginClock = startupOverlay?.querySelector('#loginClock');
+  if (loginClock) loginClock.textContent = new Intl.DateTimeFormat(currentLanguage === 'en' ? 'en-US' : 'es-GT', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+  if (document.querySelector('#clock')) updateClock();
+  if (desktopIconsRendered) {
+    updateDesktopAppLabels();
+    refreshOpenWindowContent();
+    if (editorState && windowElements.has('terminal')) openEditor(editorState.filename);
+    if (typeof launcherBackdrop !== 'undefined' && !launcherBackdrop.hidden) drawResults();
+  }
 }
 languageSelects.forEach((select) => select.addEventListener('change', () => applyLanguage(select.value)));
 applyLanguage(currentLanguage);
@@ -78,22 +98,7 @@ if (startupOverlay) {
   const bootScreen = startupOverlay.querySelector('#bootScreen');
   const bootConsole = startupOverlay.querySelector('#bootConsole');
   const loginClock = startupOverlay.querySelector('#loginClock');
-  const bootMessages = [
-    'Started User Session Services.',
-    'Finished Load/Save Screen Backlight Brightness.',
-    'Started Refreshing Package Manager Databases.',
-    'Reached target User and Group Name Lookups.',
-    'Started User Login Management.',
-    'Finished Apply Kernel Variables.',
-    'Reached target Local Encrypted Volumes.',
-    'Started D-Bus System Message Bus.',
-    'Reached target System Initialization.',
-    'Started Network Time Synchronization.',
-    'Started Create Volatile Files and Directories.',
-    'Reached target Basic System.',
-    'Started Portfolio Desktop Services.',
-    'Reached target Graphical Interface.',
-  ];
+  const bootMessages = getLocale(currentLanguage).bootLines;
   const initialBootLines = [...bootConsole.querySelectorAll('.boot-log-line')];
   const lineHeight = Number.parseFloat(getComputedStyle(initialBootLines[0]).lineHeight) || 22;
   const linesToFillScreen = Math.max(initialBootLines.length, Math.ceil((innerHeight - 136) / lineHeight));
@@ -109,7 +114,7 @@ if (startupOverlay) {
     line.style.animationDelay = reducedMotion ? '0ms' : `${(index * 1700) / Math.max(bootLines.length - 1, 1)}ms`;
   });
   const updateLoginClock = () => {
-    if (loginClock) loginClock.textContent = new Intl.DateTimeFormat('es-GT', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+    if (loginClock) loginClock.textContent = new Intl.DateTimeFormat(currentLanguage === 'en' ? 'en-US' : 'es-GT', { hour: '2-digit', minute: '2-digit' }).format(new Date());
   };
   window.setTimeout(() => {
     bootScreen.classList.add('boot-screen-exit');
@@ -148,11 +153,12 @@ const wallpapers = ['sakura', 'koi', 'ukiyo-e', 'tokyo'];
 const savedWallpaper = localStorage.getItem('portfolio-wallpaper');
 if (wallpapers.includes(savedWallpaper) && savedWallpaper !== 'sakura') wallpaper.dataset.wallpaper = savedWallpaper;
 function setWallpaper(name) {
-  if (!wallpapers.includes(name)) return `Fondo no disponible: ${name || '(vacío)'}. Opciones: ${wallpapers.join(', ')}`;
+  const locale = getLocale(currentLanguage);
+  if (!wallpapers.includes(name)) return `${locale.wallpaperUnavailable}: ${name || locale.emptyValue}. ${locale.wallpaperOptions}: ${wallpapers.join(', ')}`;
   if (name === 'sakura') delete wallpaper.dataset.wallpaper;
   else wallpaper.dataset.wallpaper = name;
   localStorage.setItem('portfolio-wallpaper', name);
-  return `Fondo cambiado a: ${name}`;
+  return `${locale.wallpaperChanged}: ${name}`;
 }
 document.querySelector('#wallpaperToggle').addEventListener('click', () => {
   const current = wallpaper.dataset.wallpaper || 'sakura';
@@ -219,8 +225,7 @@ function openWindow(id) {
 
 function render() {
   if (!desktopIconsRendered) {
-    desktopIcons.innerHTML = apps.filter((app) => !app.terminalOnly).map((app) => `<button class="desktop-icon" data-open="${app.id}" aria-label="Abrir ${app.name}"><span class="app-glyph glyph-${app.id}">${iconSvg(app.icon)}</span><span>${app.name}</span></button>`).join('');
-    mobileNav.innerHTML = apps.filter((app) => !app.external && !app.terminalOnly).map((app) => `<button data-open="${app.id}">${iconSvg(app.icon)}${app.name}</button>`).join('');
+    updateDesktopAppLabels();
     desktopIconsRendered = true;
   }
   taskItems.replaceChildren();
@@ -235,7 +240,7 @@ function render() {
     const app = apps.find((item) => item.id === id);
     const task = document.createElement('button');
     task.className = `task-item${current.workspace === activeWorkspace && !current.minimized ? ' selected' : ''}`;
-    task.innerHTML = `${iconSvg(app.icon, 'task-icon')} ${app.name}`;
+    task.innerHTML = `${iconSvg(app.icon, 'task-icon')} ${localizedApp(app).name}`;
     task.onclick = () => {
       current.workspace = activeWorkspace;
       current.minimized = false;
@@ -248,7 +253,8 @@ function render() {
       element = document.createElement('article');
       element.className = 'app-window';
       element.dataset.window = id;
-      element.innerHTML = `<header class="window-titlebar" data-drag="${id}"><div class="window-controls"><button class="win-close" aria-label="Cerrar" data-action="close" data-id="${id}"></button><button class="win-min" aria-label="Minimizar" data-action="min" data-id="${id}"></button><button class="win-max" aria-label="Maximizar o restaurar" data-action="max" data-id="${id}"></button></div><span class="window-name">${iconSvg(app.icon, 'title-icon')} ${app.name}</span><span class="window-menu">•••</span></header><div class="window-content">${renderAppContent(id, { profile, aboutText, interests, experience, education, projects, skills, terminalHistory, browserUrl, spotifyUrl })}</div><div class="resize-handle" data-resize="${id}"></div>`;
+      const locale = getLocale(currentLanguage);
+      element.innerHTML = `<header class="window-titlebar" data-drag="${id}"><div class="window-controls"><button class="win-close" aria-label="${locale.close}" data-action="close" data-id="${id}"></button><button class="win-min" aria-label="${locale.minimize}" data-action="min" data-id="${id}"></button><button class="win-max" aria-label="${locale.maximize}" data-action="max" data-id="${id}"></button></div><span class="window-name">${iconSvg(app.icon, 'title-icon')} ${localizedApp(app).name}</span><span class="window-menu" aria-label="${locale.appTitle}">•••</span></header><div class="window-content">${renderAppContent(id, { profile: localizedProfile(), aboutText, interests, experience, education, projects, skills, terminalHistory, browserUrl, spotifyUrl, language: currentLanguage })}</div><div class="resize-handle" data-resize="${id}"></div>`;
       windowLayer.append(element);
       windowElements.set(id, element);
       if (id === 'terminal') populateMatrix(element.querySelector('.matrix-field'));
@@ -289,6 +295,47 @@ function focusTerminalPrompt() {
   });
 }
 
+function localizedApp(app) {
+  const locale = getLocale(currentLanguage);
+  return { ...app, name: locale.appNames[app.id] || app.name, desc: locale.appDescriptions[app.id] || app.desc };
+}
+function localizedProfile() {
+  return { ...profile, role: getLocale(currentLanguage).frontendRole };
+}
+
+function updateDesktopAppLabels() {
+  const visibleApps = apps.filter((app) => !app.terminalOnly).map(localizedApp);
+  desktopIcons.innerHTML = visibleApps.map((app) => `<button class="desktop-icon" data-open="${app.id}" aria-label="${getLocale(currentLanguage).open} ${app.name}"><span class="app-glyph glyph-${app.id}">${iconSvg(app.icon)}</span><span>${app.name}</span></button>`).join('');
+  mobileNav.innerHTML = visibleApps.filter((app) => !app.external).map((app) => `<button data-open="${app.id}" aria-label="${getLocale(currentLanguage).open} ${app.name}">${iconSvg(app.icon)}${app.name}</button>`).join('');
+}
+
+function refreshOpenWindowContent() {
+  for (const [id, element] of windowElements) {
+    const app = apps.find((item) => item.id === id);
+    const title = element.querySelector('.window-name');
+    if (title && app) title.innerHTML = `${iconSvg(app.icon, 'title-icon')} ${localizedApp(app).name}`;
+    const closeButton = element.querySelector('.win-close');
+    const minButton = element.querySelector('.win-min');
+    const maxButton = element.querySelector('.win-max');
+    const locale = getLocale(currentLanguage);
+    if (closeButton) closeButton.setAttribute('aria-label', locale.close);
+    if (minButton) minButton.setAttribute('aria-label', locale.minimize);
+    if (maxButton) maxButton.setAttribute('aria-label', locale.maximize);
+    const messages = id === 'assistant' ? [...(element.querySelector('#assistantMessages')?.children || [])].slice(1).map((node) => node.cloneNode(true)) : [];
+    const content = element.querySelector('.window-content');
+    if (content) content.innerHTML = renderAppContent(id, { profile: localizedProfile(), aboutText, interests, experience, education, projects, skills, terminalHistory, browserUrl, spotifyUrl, language: currentLanguage });
+    if (id === 'browser') initializeBrowser(element);
+    if (id === 'spotify') initializeSpotify(element);
+    if (id === 'github') initializeGithub(element);
+    if (id === 'assistant') {
+      const messageList = element.querySelector('#assistantMessages');
+      messages.forEach((node) => messageList.append(node));
+      initializeAssistant(element);
+    }
+  }
+  render();
+}
+
 function initializeAssistant(element) {
   const form = element.querySelector('#assistantForm');
   const input = element.querySelector('#assistantInput');
@@ -309,7 +356,7 @@ function initializeAssistant(element) {
     const name = document.createElement('b');
     name.textContent = 'Gemini';
     const response = document.createElement('p');
-    response.textContent = 'Pensando…';
+    response.textContent = getLocale(currentLanguage).thinking;
     bot.append(name, response);
     messages.append(user, bot);
     messages.scrollTop = messages.scrollHeight;
@@ -317,14 +364,14 @@ function initializeAssistant(element) {
       .then(async (result) => {
         const contentType = result.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
-          throw new Error('El servidor del chat no está disponible en este hosting. Este portfolio necesita ejecutarse con Node.js y el endpoint /api/chat habilitado.');
+          throw new Error(getLocale(currentLanguage).chatUnavailable);
         }
         const payload = await result.json();
-        if (!result.ok) throw new Error(payload.error || 'No se pudo conectar con Gemini.');
+        if (!result.ok) throw new Error(payload.error || getLocale(currentLanguage).geminiError);
         return payload.answer;
       })
       .then((answer) => { response.textContent = answer; })
-      .catch((error) => { response.textContent = error.message || 'No se pudo conectar con Gemini. Inténtalo de nuevo.'; bot.classList.add('assistant-error'); })
+      .catch((error) => { response.textContent = error.message || getLocale(currentLanguage).geminiError; bot.classList.add('assistant-error'); })
       .finally(() => { messages.scrollTop = messages.scrollHeight; });
   });
 }
@@ -348,19 +395,19 @@ function initializeBrowser(element) {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (containsHtmlMarkup(address.value)) {
-      hint.textContent = 'No se permite introducir etiquetas HTML.';
+      hint.textContent = getLocale(currentLanguage).htmlNotAllowed;
       return;
     }
     const url = normalizeBrowserUrl(address.value);
     if (!url) {
-      hint.textContent = 'Dirección no válida. Usa una URL http o https.';
+      hint.textContent = getLocale(currentLanguage).invalidAddress;
       return;
     }
     browserUrl = url === 'about:blank' ? '' : url;
     address.value = browserUrl;
     frame.src = url;
     external.href = url;
-    hint.textContent = 'Navegador integrado. Algunos sitios bloquean su visualización dentro de otros sitios.';
+    hint.textContent = getLocale(currentLanguage).browserEmbedded;
   });
   element.querySelector('[data-browser-action="reload"]').addEventListener('click', () => { frame.src = frame.src; });
   element.querySelector('[data-browser-action="back"]').addEventListener('click', () => {
@@ -404,19 +451,19 @@ function initializeSpotify(element) {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (containsHtmlMarkup(address.value)) {
-      hint.textContent = 'No se permite introducir etiquetas HTML.';
+      hint.textContent = getLocale(currentLanguage).htmlNotAllowed;
       return;
     }
     const normalized = normalizeSpotifyUrl(address.value);
     if (!normalized) {
-      hint.textContent = 'Enlace no válido. Pega un enlace de Spotify o YouTube.';
+      hint.textContent = getLocale(currentLanguage).spotifyInvalid;
       return;
     }
     spotifyUrl = normalized;
     address.value = normalized;
     frame.src = normalized.replace('https://open.spotify.com/', 'https://open.spotify.com/embed/');
     localStorage.setItem('portfolio-spotify-url', normalized);
-    hint.textContent = 'Reproducción integrada en el portfolio. Pulsa ▶ dentro del reproductor para escuchar.';
+    hint.textContent = getLocale(currentLanguage).spotifyEmbedded;
   });
   element.querySelectorAll('[data-spotify-uri]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -440,7 +487,7 @@ async function loadGithubData(element, force = false) {
   const status = element.querySelector('#githubUpdated');
   const refresh = element.querySelector('#githubRefresh');
   refresh.disabled = true;
-  status.textContent = 'Actualizando información pública…';
+  status.textContent = getLocale(currentLanguage).githubLoadingStatus;
   if (!force && githubRequest) {
     try { renderGithubData(element, await githubRequest); } catch (error) { renderGithubError(element, error); }
     finally { refresh.disabled = false; }
@@ -454,8 +501,9 @@ async function loadGithubData(element, force = false) {
       fetch(`https://api.github.com/users/${username}/repos?type=owner&sort=updated&per_page=100`, { headers }),
       fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, { headers }).catch(() => null),
     ]);
-    if (!profileResponse.ok) throw new Error(profileResponse.status === 403 ? 'GitHub limitó temporalmente las consultas públicas. Espera un momento y vuelve a actualizar.' : `GitHub respondió con el error ${profileResponse.status}.`);
-    if (!reposResponse.ok) throw new Error(`No se pudieron cargar los repositorios (HTTP ${reposResponse.status}).`);
+    const locale = getLocale(currentLanguage);
+    if (!profileResponse.ok) throw new Error(profileResponse.status === 403 ? locale.githubRateLimit : `${locale.githubRequestError} ${profileResponse.status}.`);
+    if (!reposResponse.ok) throw new Error(`${locale.repositoriesError} (HTTP ${reposResponse.status}).`);
     const [user, repos, events] = await Promise.all([
       profileResponse.json(),
       reposResponse.json(),
@@ -476,33 +524,35 @@ async function loadGithubData(element, force = false) {
 }
 
 function renderGithubError(element, error) {
-  element.querySelector('#githubUpdated').textContent = error?.message || 'No se pudieron cargar los datos de GitHub.';
-  element.querySelector('#githubRepositories').innerHTML = '<p class="github-loading">Revisa tu conexión y pulsa ↻ para volver a intentar.</p>';
-  element.querySelector('#githubActivitySummary').textContent = 'Actividad no disponible';
+  const locale = getLocale(currentLanguage);
+  element.querySelector('#githubUpdated').textContent = error instanceof TypeError ? locale.checkConnection : error?.message || locale.loadingPublicData;
+  element.querySelector('#githubRepositories').innerHTML = `<p class="github-loading">${locale.checkConnection}</p>`;
+  element.querySelector('#githubActivitySummary').textContent = locale.activityUnavailable;
 }
 
 function renderGithubData(element, data) {
   const { user, repos, events } = data;
-  const number = new Intl.NumberFormat('es');
+  const locale = getLocale(currentLanguage);
+  const number = new Intl.NumberFormat(currentLanguage);
   const name = element.querySelector('#githubName');
   const handle = element.querySelector('#githubHandle');
   const bio = element.querySelector('#githubBio');
   const avatar = element.querySelector('#githubAvatar');
   name.textContent = user.name || user.login;
   handle.textContent = `@${user.login}`;
-  bio.textContent = [user.bio, user.location].filter(Boolean).join(' · ') || 'Perfil público de GitHub';
+  bio.textContent = [user.bio, user.location].filter(Boolean).join(' · ') || locale.publicProfile;
   const avatarUrl = new URL(user.avatar_url);
   if (avatarUrl.protocol === 'https:' && avatarUrl.hostname === 'avatars.githubusercontent.com') avatar.src = avatarUrl.href;
   const publicCommits = (events || []).filter((event) => event.type === 'PushEvent').reduce((sum, event) => sum + Number(event.payload?.size || event.payload?.commits?.length || 0), 0);
   element.querySelector('#githubStats').innerHTML = [
-    ['Seguidores', user.followers], ['Siguiendo', user.following], ['Repositorios', user.public_repos], ['Commits públicos recientes', publicCommits],
+    [locale.statusFollowers, user.followers], [locale.statusFollowing, user.following], [locale.statusRepos, user.public_repos], [locale.statusRecentCommits, publicCommits],
   ].map(([label, value]) => `<div class="github-stat"><strong>${number.format(value ?? 0)}</strong><span>${label}</span></div>`).join('');
 
   const repositoryList = element.querySelector('#githubRepositories');
   repositoryList.replaceChildren();
   const visibleRepos = [...repos].sort((a, b) => new Date(b.pushed_at || b.updated_at) - new Date(a.pushed_at || a.updated_at)).slice(0, 12);
-  element.querySelector('#githubRepoSummary').textContent = `${number.format(user.public_repos)} públicos · mostrando ${visibleRepos.length} recientes`;
-  if (!visibleRepos.length) repositoryList.innerHTML = '<p class="github-loading">No hay repositorios públicos para mostrar.</p>';
+  element.querySelector('#githubRepoSummary').textContent = `${number.format(user.public_repos)} ${locale.public} · ${locale.showing} ${visibleRepos.length} ${locale.recent}`;
+  if (!visibleRepos.length) repositoryList.innerHTML = `<p class="github-loading">${locale.noRepositories}</p>`;
   for (const repo of visibleRepos) {
     const card = document.createElement('article');
     card.className = 'github-repo';
@@ -516,7 +566,7 @@ function renderGithubData(element, data) {
       repoLink.rel = 'noopener noreferrer';
     }
     const description = document.createElement('p');
-    description.textContent = repo.description || 'Sin descripción';
+    description.textContent = repo.description || locale.noDescription;
     const meta = document.createElement('small');
     meta.textContent = [repo.language, `★ ${number.format(repo.stargazers_count)}`, `⑂ ${number.format(repo.forks_count)}`].filter(Boolean).join(' · ');
     card.append(repoLink, description, meta);
@@ -542,15 +592,15 @@ function renderGithubData(element, data) {
     const cell = document.createElement('span');
     const level = count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : count <= 6 ? 3 : 4;
     cell.className = `github-day level-${level}`;
-    cell.title = `${key}: ${count} eventos públicos`;
+    cell.title = `${key}: ${count} ${locale.publicEvents}`;
     cell.setAttribute('aria-label', cell.title);
     calendar.append(cell);
   }
   const publicEvents = events?.length;
   element.querySelector('#githubActivitySummary').textContent = publicEvents === undefined || publicEvents === null
-    ? 'Actividad pública no disponible'
-    : `${number.format(publicEvents)} eventos · ${activeDays} días activos · últimos 30 días`;
-  element.querySelector('#githubUpdated').textContent = `Datos públicos de GitHub · actualizado ${new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())}`;
+    ? locale.publicActivityUnavailable
+    : `${number.format(publicEvents)} ${locale.events} · ${activeDays} ${locale.activeDays} · ${locale.last30Days}`;
+  element.querySelector('#githubUpdated').textContent = `${locale.publicGitHubData} · ${locale.updated} ${new Intl.DateTimeFormat(currentLanguage, { dateStyle: 'short', timeStyle: 'short' }).format(new Date())}`;
 }
 
 function cycleWindow(reverse = false) {
@@ -664,9 +714,9 @@ const appSearch = document.querySelector('#appSearch');
 const appResults = document.querySelector('#appResults');
 let selectedResult = 0;
 function drawResults() {
-  const matches = apps.filter((app) => !app.terminalOnly && `${app.name} ${app.desc}`.toLowerCase().includes(appSearch.value.toLowerCase()));
+  const matches = apps.filter((app) => !app.terminalOnly).map(localizedApp).filter((app) => `${app.name} ${app.desc}`.toLowerCase().includes(appSearch.value.toLowerCase()));
   selectedResult = Math.min(selectedResult, Math.max(0, matches.length - 1));
-  appResults.innerHTML = matches.map((app, index) => `<button class="launcher-result ${index === selectedResult ? 'active' : ''}" data-result="${app.id}"><span class="result-icon">${iconSvg(app.icon)}</span><span><b>${app.name}</b><small>${app.desc}</small></span><kbd>↵</kbd></button>`).join('') || '<p class="no-results">No applications found</p>';
+  appResults.innerHTML = matches.map((app, index) => `<button class="launcher-result ${index === selectedResult ? 'active' : ''}" data-result="${app.id}"><span class="result-icon">${iconSvg(app.icon)}</span><span><b>${app.name}</b><small>${app.desc}</small></span><kbd>↵</kbd></button>`).join('') || `<p class="no-results">${getLocale(currentLanguage).noApplications}</p>`;
 }
 function showLauncher() {
   focusedBeforeLauncher = document.activeElement;
@@ -796,12 +846,13 @@ function populateMatrix(field) {
   }
 }
 function updateClock() {
-  document.querySelector('#clock').textContent = new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  document.querySelector('#clock').textContent = new Intl.DateTimeFormat(currentLanguage, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
 }
 function updateEditorMode(message = '') {
   const mode = document.querySelector('#editorMode');
   const status = document.querySelector('#editorStatus');
-  if (mode) mode.textContent = `-- ${editorState?.mode === 'insert' ? 'INSERT' : editorState?.mode === 'command' ? 'COMMAND' : 'NORMAL'} --`;
+  const locale = getLocale(currentLanguage);
+  if (mode) mode.textContent = `-- ${editorState?.mode === 'insert' ? locale.editorInsert : editorState?.mode === 'command' ? locale.editorCommand : locale.editorNormal} --`;
   if (status) status.textContent = message;
   const textarea = document.querySelector('#editorText');
   if (textarea) textarea.readOnly = editorState?.mode !== 'insert';
@@ -810,24 +861,25 @@ function saveEditorFile() {
   if (!editorState) return;
   const draft = document.querySelector('#editorText')?.value ?? editorState.content;
   if (containsHtmlMarkup(draft)) {
-    updateEditorMode('No se guardó: no se permiten etiquetas HTML.');
+    updateEditorMode(getLocale(currentLanguage).saveNotAllowed);
     return false;
   }
   editorState.content = draft;
   editorFiles.set(editorState.filename, editorState.content);
   editorState.mode = 'normal';
-  updateEditorMode(`"${editorState.filename}" written`);
+  updateEditorMode(`"${editorState.filename}" ${getLocale(currentLanguage).editorWritten}`);
   return true;
 }
 function openEditor(filename) {
   const validFiles = [...editorFiles.keys()];
-  if (!filename) return `Usage: nvim <file> · available: ${validFiles.join(', ')}`;
-  if (!editorFiles.has(filename)) return `File not found: ${filename}\nAvailable: ${validFiles.join(', ')}`;
+  const locale = getLocale(currentLanguage);
+  if (!filename) return `${locale.editorUsage} ${validFiles.join(', ')}`;
+  if (!editorFiles.has(filename)) return `${locale.fileNotFound}: ${filename}\n${locale.available}: ${validFiles.join(', ')}`;
   editorState = { filename, content: editorFiles.get(filename), mode: 'normal' };
   document.querySelector('#terminalInput').disabled = true;
   document.querySelector('#terminalForm').hidden = true;
   const output = document.querySelector('#terminalOutput');
-  output.innerHTML = `<section class="vim-editor"><header class="vim-title">"${filename}" · portfolio buffer</header><textarea id="editorText" aria-label="Contenido del archivo" spellcheck="false" readonly>${editorState.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea><footer class="vim-status"><span id="editorMode">-- NORMAL --</span><span id="editorStatus">i: editar · Esc: modo normal · :wq: guardar y salir · Ctrl+S: guardar</span></footer><form class="vim-command" id="editorCommandForm"><span>:</span><input id="editorCommand" aria-label="Comando de Neovim" autocomplete="off" hidden/></form></section>`;
+  output.innerHTML = `<section class="vim-editor"><header class="vim-title">"${filename}" · ${locale.editorBuffer}</header><textarea id="editorText" aria-label="${locale.editorContent}" spellcheck="false" readonly>${editorState.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea><footer class="vim-status"><span id="editorMode">-- ${locale.editorNormal} --</span><span id="editorStatus">${locale.editorHelp}</span></footer><form class="vim-command" id="editorCommandForm"><span>:</span><input id="editorCommand" aria-label="${locale.editorCommandInput}" autocomplete="off" hidden/></form></section>`;
   const textarea = document.querySelector('#editorText');
   textarea.addEventListener('input', () => { editorState.content = textarea.value; });
   document.querySelector('#editorCommandForm').addEventListener('submit', (event) => {
@@ -841,7 +893,7 @@ function openEditor(filename) {
     if (editorState) { editorState.mode = 'normal'; updateEditorMode(); }
   });
   updateEditorMode();
-  return `Opening ${filename} in Neovim…`;
+  return `${locale.openingEditor} ${filename} in Neovim…`;
 }
 function closeEditor(save = false) {
   if (!editorState) return;
@@ -861,19 +913,17 @@ async function askGeminiFromTerminal(question, responseElement, historyEntry) {
       body: JSON.stringify({ question, history: terminalAiHistory.slice(-10) }),
     });
     const contentType = result.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      throw new Error('El endpoint del asistente no está disponible en este hosting.');
-    }
+    if (!contentType.includes('application/json')) throw new Error(getLocale(currentLanguage).assistantUnavailable);
     const payload = await result.json();
-    if (!result.ok) throw new Error(payload.error || 'No se pudo conectar con Gemini.');
+    if (!result.ok) throw new Error(payload.error || getLocale(currentLanguage).geminiError);
     const answer = String(payload.answer || '').trim();
-    if (!answer) throw new Error('Gemini devolvió una respuesta vacía.');
+    if (!answer) throw new Error(getLocale(currentLanguage).blankResponse);
     terminalAiHistory.push({ role: 'user', content: question }, { role: 'assistant', content: answer });
     terminalAiHistory.splice(0, terminalAiHistory.length - 10);
     historyEntry.response = answer;
     responseElement.textContent = answer;
   } catch (error) {
-    historyEntry.response = error.message || 'No se pudo conectar con Gemini. Inténtalo de nuevo.';
+    historyEntry.response = error.message || getLocale(currentLanguage).geminiError;
     historyEntry.error = true;
     responseElement.classList.add('error');
     responseElement.textContent = historyEntry.response;
@@ -881,30 +931,32 @@ async function askGeminiFromTerminal(question, responseElement, historyEntry) {
   const output = document.querySelector('#terminalOutput');
   if (output) output.scrollTop = output.scrollHeight;
 }
-updateClock();
+  updateClock();
 setInterval(updateClock, 15000);
 
 const commands = {
-  help: () => 'Comandos: help, ls, pwd, whoami, uname, neofetch, date, cal, clear, history, pacman, yay, systemctl, fastfetch, apps, open <app>, windows, workspaces, workspace <1-4>, browser [url], spotify [búsqueda], wallpaper [tema], about, projects, skills, github, contact, ask <pregunta>, nvim <archivo>, exit. Comandos de sistema simulados para este portfolio.',
+  help: () => getLocale(currentLanguage).termHelp,
   pwd: () => '/home/franklin/portfolio',
-  uname: (args) => args.includes('-a') ? 'Linux arch 6.12.8-arch1-1 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux (simulado)' : 'Linux',
-  fastfetch: () => ` ${profile.name}\nOS: Arch Linux (simulado)\nHost: portfolio web\nKernel: 6.12.8-arch1-1\nShell: zsh portfolio-shell\nWM: Hyprland-inspired`,
-  cal: () => new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(new Date()),
-  history: () => terminalCommandHistory.map((item, index) => ` ${index + 1}  ${item}`).join('\n') || 'El historial está vacío.',
-  pacman: (args) => args[0] === '-Ss' ? `repositorio/archlinux-portfolio 1.0-1\n    Escritorio interactivo y portfolio personal\n\nEste portfolio no instala paquetes: pacman está en modo demostración.` : 'pacman (simulado): prueba pacman -Ss <paquete> para buscar paquetes de ejemplo.',
-  yay: (args) => args[0] === '-Ss' ? `aur/archlinux-portfolio 1.0-1\n    Portfolio personal con escritorio Arch Linux\n\nyay está en modo demostración; no instala software.` : 'yay (simulado): prueba yay -Ss <paquete> para buscar paquetes de ejemplo.',
-  systemctl: (args) => args[0] === 'status' ? `● portfolio-desktop.service - Portfolio desktop simulation\n   Active: active (running)\n   Main PID: ${Math.floor(performance.now())}\n   CGroup: /user.slice/portfolio` : 'systemctl (simulado): usa systemctl status para ver el estado del escritorio.',
+  uname: (args) => args.includes('-a') ? `Linux arch 6.12.8-arch1-1 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux (${getLocale(currentLanguage).simulated})` : 'Linux',
+  fastfetch: () => { const t = getLocale(currentLanguage); return ` ${profile.name}\nOS: Arch Linux (${t.simulated})\nHost: ${t.personalPortfolio}\nKernel: 6.12.8-arch1-1\nShell: zsh ${t.shell}\nWM: ${t.desktopEnvironment}`; },
+  cal: () => new Intl.DateTimeFormat(getLocale(currentLanguage).calendarLocale, { month: 'long', year: 'numeric' }).format(new Date()),
+  history: () => terminalCommandHistory.map((item, index) => ` ${index + 1}  ${item}`).join('\n') || getLocale(currentLanguage).emptyTerminalHistory,
+  pacman: (args) => { const t = getLocale(currentLanguage); return args[0] === '-Ss' ? `repository/archlinux-portfolio 1.0-1\n    ${t.personalPortfolio}\n\n${t.packageDemo}` : `pacman (${t.simulated}): pacman -Ss <package> ${t.packageSearchHint}`; },
+  yay: (args) => { const t = getLocale(currentLanguage); return args[0] === '-Ss' ? `aur/archlinux-portfolio 1.0-1\n    ${t.personalPortfolio}\n\n yay ${t.packageDemoMode}` : `yay (${t.simulated}): yay -Ss <package> ${t.packageSearchHint}`; },
+  systemctl: (args) => { const t = getLocale(currentLanguage); return args[0] === 'status' ? `● portfolio-desktop.service - ${t.appTitle}\n   ${t.activeStatus}: ${t.runningStatus}\n   ${t.mainPid}: ${Math.floor(performance.now())}\n   ${t.cgroup}: /user.slice/portfolio` : `systemctl (${t.simulated}): systemctl status`; },
   ask: (args) => {
     const question = args.join(' ').trim();
-    if (args[0] === '--help' || args[0] === '-h') return `Uso: ask <pregunta>\n\nPregunta a Gemini desde la terminal y conserva el contexto de esta sesión.\nEjemplo: ask ¿Qué proyectos ha creado Franklin?\nSin pregunta, abre el asistente del portfolio.`;
-    if (!question) return { message: 'Abriendo el asistente del portfolio…', action: () => openApp('assistant') };
+    const t = getLocale(currentLanguage);
+    if (args[0] === '--help' || args[0] === '-h') return `${t.askUsage}\n\n${t.askHelpText}\n${t.askExample}\n${t.openAssistantNoQuestion}`;
+    if (!question) return { message: t.opensAssistant, action: () => openApp('assistant') };
     return {
-      message: 'Consultando Gemini…',
+      message: t.askingGemini,
       action: (responseElement, historyEntry) => askGeminiFromTerminal(question, responseElement, historyEntry),
     };
   },
   spotify: (args) => {
-    if (args[0] === '--help' || args[0] === '-h') return `Uso: spotify [opción]\n\nAbre Spotify dentro del portfolio.\n\nOpciones:\n  --help, -h       Muestra esta ayuda\n  sanctuary ship   Carga Nujabes · Sanctuary Ship\n  lofi girl        Carga la playlist Hip Hop de Lofi Girl\n\nEjemplos:\n  spotify\n  spotify sanctuary ship\n  spotify lofi girl`;
+    const t = getLocale(currentLanguage);
+    if (args[0] === '--help' || args[0] === '-h') return `${t.spotifyUsage}\n\n${t.openSpotify}\n\n${t.availableOptions}:\n  --help, -h       ${t.showHelp}\n  sanctuary ship   ${t.loadSanctuary}\n  lofi girl        ${t.loadLofi}\n\n${t.examples}:\n  spotify\n  spotify sanctuary ship\n  spotify lofi girl`;
     const query = args.join(' ').trim();
     const target = query.toLowerCase();
     const uri = target === 'sanctuary ship' || target === 'nujabes sanctuary ship'
@@ -913,54 +965,55 @@ const commands = {
         ? 'spotify:playlist:0vvXsWCC9xrXsKd4FyS8kM'
         : '';
     if (uri) spotifyUrl = normalizeSpotifyUrl(uri);
-    else if (query) return `Opción no reconocida: ${query}. Usa 'spotify --help' para ver los accesos disponibles.`;
-    return { message: `Abriendo Spotify${query ? `: ${query}` : ' en el portfolio'}…`, action: () => openApp('spotify') };
+    else if (query) return `${t.unknownOption}: ${query}. ${t.spotifyHelpHint}`;
+    return { message: `${t.openingSpotify}${query ? `: ${query}` : ` ${t.inPortfolio}`}…`, action: () => openApp('spotify') };
   },
   browser: (args) => {
     const url = normalizeBrowserUrl(args.join(' '));
-    if (url === null) return 'Dirección no válida. Uso: browser [https://example.com]';
+    if (url === null) return getLocale(currentLanguage).invalidBrowserCommand;
     browserUrl = url === 'about:blank' ? '' : url;
-    return { message: `Abriendo el navegador${browserUrl ? ` en ${browserUrl}` : ''}…`, action: () => openApp('browser') };
+    return { message: `${getLocale(currentLanguage).openingBrowser}${browserUrl ? ` ${browserUrl}` : ''}…`, action: () => openApp('browser') };
   },
   wallpaper: (args) => {
-    if (args[0] === '--help' || args[0] === '-h') return `Uso: wallpaper [opción]\n\nCambia o consulta el fondo del escritorio.\n\nOpciones disponibles:\n  sakura    Fondo japonés claro\n  koi       Pez koi y sol rojo\n  ukiyo-e   Ilustración japonesa tradicional\n  tokyo     Calle de Tokio\n  --help    Muestra esta ayuda\n\nSin opción, muestra el fondo actual.\nEjemplo: wallpaper tokyo`;
-    return args[0] ? setWallpaper(args[0].toLowerCase()) : `Fondo actual: ${wallpaper.dataset.wallpaper || 'sakura'}\nOpciones: ${wallpapers.join(', ')}\nUso: wallpaper <nombre>`;
+    const t = getLocale(currentLanguage);
+    if (args[0] === '--help' || args[0] === '-h') return `${t.wallpaperUsageText}\n\n${t.wallpaperHelpText}\n\n${t.availableOptions}:\n  sakura    ${t.themeSakura}\n  koi       ${t.themeKoi}\n  ukiyo-e   ${t.themeUkiyo}\n  tokyo     ${t.themeTokyo}\n  --help    ${t.showHelp}\n\n${t.currentWallpaperLabel}\n${t.exampleLabel}: wallpaper tokyo`;
+    return args[0] ? setWallpaper(args[0].toLowerCase()) : `${t.currentWallpaperLabel}: ${wallpaper.dataset.wallpaper || 'sakura'}\n${t.wallpaperOptions}: ${wallpapers.join(', ')}\n${t.wallpaperUsage}`;
   },
   nvim: (args) => ({ message: openEditor(args[0]) }),
   ls: () => apps.map((app) => `${app.id}/`).join('    '),
-  apps: () => apps.map((app) => `  ${app.id.padEnd(12)} ${app.name} — ${app.desc}`).join('\n'),
+  apps: () => apps.map((app) => { const localized = localizedApp(app); return `  ${app.id.padEnd(12)} ${localized.name} — ${localized.desc}`; }).join('\n'),
   workspaces: () => [1, 2, 3, 4].map((workspace) => {
     const visible = [...windowState.values()].filter((item) => item.workspace === workspace).map((item) => {
-      const name = apps.find((app) => app.id === item.id)?.name;
-      return `${name}${item.minimized ? ' (minimized)' : ''}`;
+      const name = localizedApp(apps.find((app) => app.id === item.id) || { id: '', name: '' }).name;
+      return `${name}${item.minimized ? ` (${getLocale(currentLanguage).workspaceMinimized})` : ''}`;
     });
-    const label = workspace === activeWorkspace ? ' (active)' : '';
-    return `${workspace}${label}: ${visible.length ? visible.join(', ') : 'empty'}`;
+    const label = workspace === activeWorkspace ? ` (${getLocale(currentLanguage).workspaceActive})` : '';
+    return `${workspace}${label}: ${visible.length ? visible.join(', ') : getLocale(currentLanguage).workspaceEmpty}`;
   }).join('\n'),
   workspace: (args) => {
     const workspace = Number(args[0]);
-    if (![1, 2, 3, 4].includes(workspace)) return 'Usage: workspace <1-4>';
-    return { message: `Switching to workspace ${workspace}…`, action: () => switchWorkspace(workspace) };
+    if (![1, 2, 3, 4].includes(workspace)) return getLocale(currentLanguage).usageWorkspace;
+    return { message: `${getLocale(currentLanguage).switchingWorkspace} ${workspace}…`, action: () => switchWorkspace(workspace) };
   },
   windows: () => {
-    const opened = [...windowState.values()].map((item) => `${apps.find((app) => app.id === item.id)?.name} · workspace ${item.workspace}${item.minimized ? ' · minimized' : ''}`);
-    return opened.length ? opened.join('\n') : 'No open windows.';
+    const opened = [...windowState.values()].map((item) => `${localizedApp(apps.find((app) => app.id === item.id) || { id: '', name: '' }).name} · ${getLocale(currentLanguage).workspaceLabel} ${item.workspace}${item.minimized ? ` · ${getLocale(currentLanguage).workspaceMinimized}` : ''}`);
+    return opened.length ? opened.join('\n') : getLocale(currentLanguage).noOpenWindows;
   },
   open: (args) => {
     const query = args.join(' ').toLowerCase();
-    const target = apps.find((app) => app.id === query || app.name.toLowerCase() === query);
-    if (!target) return { message: `Application not found: ${query || '(empty)'}. Use 'apps' to list available applications.` };
-    if (target.external) return { message: `${target.name}: ${profile.github}\nOpen the GitHub app from the desktop to visit the profile.` };
-    return { message: `Opening ${target.name}…`, action: () => openApp(target.id) };
+    const target = apps.find((app) => app.id === query || app.name.toLowerCase() === query || localizedApp(app).name.toLowerCase() === query);
+    if (!target) return { message: `${getLocale(currentLanguage).appNotFoundFor}: ${query || getLocale(currentLanguage).emptyValue}. ${getLocale(currentLanguage).useApps}` };
+    if (target.external) return { message: `${localizedApp(target).name}: ${profile.github}\n${getLocale(currentLanguage).externalOpen}` };
+    return { message: `${getLocale(currentLanguage).appOpening} ${localizedApp(target).name}…`, action: () => openApp(target.id) };
   },
-  about: () => aboutText,
-  projects: () => projects.length ? projects.map((project) => `• ${project.name}`).join('\n') : 'No verified projects found.',
-  skills: () => skills.length ? skills.join(' · ') : 'No verified skills list found.',
-  github: () => ({ message: 'Abriendo el perfil de GitHub dentro del portfolio…', action: () => openApp('github') }),
-  contact: () => 'No verified contact details found in the source.',
-  neofetch: () => `      /\\         ${profile.name}\n     /  \\        ${profile.role}\n    /\\   \\       OS: Arch Linux (simulated)\n   /      \\      Shell: web-terminal\n  /   ,,   \\     WM: Hyprland-inspired\n /   |  |   \\    Browser: ${navigator.userAgent.split(' ').slice(-1)[0]}`,
-  date: () => new Date().toLocaleString(),
-  whoami: () => `${profile.name} · ${profile.role}`,
+  about: () => getLocale(currentLanguage).aboutBio,
+  projects: () => projects.length ? projects.map((project) => `• ${project.name}`).join('\n') : getLocale(currentLanguage).noProjects,
+  skills: () => skills.length ? skills.join(' · ') : getLocale(currentLanguage).noSkills,
+  github: () => ({ message: getLocale(currentLanguage).openingGitHub, action: () => openApp('github') }),
+  contact: () => getLocale(currentLanguage).noContactDetails,
+  neofetch: () => `      /\\         ${profile.name}\n     /  \\        ${localizedProfile().role}\n    /\\   \\       OS: Arch Linux (${getLocale(currentLanguage).simulated})\n   /      \\      Shell: web-terminal\n  /   ,,   \\     WM: ${getLocale(currentLanguage).desktopEnvironment}\n /   |  |   \\    Browser: ${navigator.userAgent.split(' ').slice(-1)[0]}`,
+  date: () => new Date().toLocaleString(currentLanguage),
+  whoami: () => `${profile.name} · ${localizedProfile().role}`,
   clear: () => null,
   exit: () => null,
 };
@@ -989,7 +1042,7 @@ function updateTerminalSuggestion() {
     ? candidate.slice(typed.length)
     : candidate ? `  → ${candidate}` : '';
   suggestion.textContent = suffix;
-  suggestion.title = candidate ? `Sugerencia ${completionIndex + 1}/${completionMatches.length}: ${candidate}` : '';
+  suggestion.title = candidate ? `${getLocale(currentLanguage).suggestionLabel} ${completionIndex + 1}/${completionMatches.length}: ${candidate}` : '';
 }
 
 function editDistance(left, right) {
@@ -1083,7 +1136,7 @@ windowLayer.addEventListener('submit', (event) => {
     input.value = '';
     const response = document.createElement('pre');
     response.className = 'command-response error';
-    response.textContent = 'Entrada bloqueada: no se permite escribir etiquetas HTML en la terminal.';
+    response.textContent = getLocale(currentLanguage).blockedTerminalInput;
     output.append(response, event.target);
     output.scrollTop = output.scrollHeight;
     focusTerminalPrompt();
@@ -1129,7 +1182,8 @@ windowLayer.addEventListener('submit', (event) => {
   input.value = '';
 
   const suggestion = run ? '' : suggestCommand(commandName);
-  let result = run ? run(args) : `command not found: ${commandName}.${suggestion ? `\nDid you mean '${suggestion}${args.length ? ` ${args.join(' ')}` : ''}'?` : " Type 'help' for available commands."}`;
+  const locale = getLocale(currentLanguage);
+  let result = run ? run(args) : `${locale.commandNotFound}: ${commandName}.${suggestion ? `\n${locale.didYouMean} '${suggestion}${args.length ? ` ${args.join(' ')}` : ''}'?` : ` ${locale.typeHelpCommand}`}`;
   const action = result && typeof result === 'object' ? result.action : null;
   const responseText = result && typeof result === 'object' ? result.message : result;
   const isError = !run || (typeof responseText === 'string' && responseText.startsWith('Application not found:'));
