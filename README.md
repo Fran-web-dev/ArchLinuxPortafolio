@@ -4,6 +4,8 @@ Portfolio personal interactivo con apariencia de escritorio inspirada en Arch Li
 
 **[Visitar el portfolio](https://archlinux-portafolio.netlify.app/)**
 
+![Vista previa del portfolio](public/archlinux-portfolio.png)
+
 ## Funciones
 
 - Escritorio interactivo con ventanas y cuatro espacios de trabajo.
