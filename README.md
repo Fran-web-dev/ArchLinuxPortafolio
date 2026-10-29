@@ -58,37 +58,9 @@ The experience supports English and Spanish and adapts to small screens. It is b
 
 You can also switch workspaces, find apps with the launcher, change the wallpaper, and switch the interface language.
 
-## Getting started
+## Try it out
 
-### Requirements
-
-- Node.js `>=22.23.4`
-- pnpm `11.25.0`
-
-### Install and run
-
-```bash
-pnpm install
-pnpm dev
-```
-
-Astro serves the site at `http://localhost:4321` by default. To build and serve the production version:
-
-```bash
-pnpm build
-pnpm start
-```
-
-## Commands
-
-| Command | Action |
-| --- | --- |
-| `pnpm dev` | Starts Astro in the background. |
-| `pnpm build` | Creates a production build in `dist/`. |
-| `pnpm preview` | Previews the Astro build. |
-| `pnpm start` | Serves the production build locally. |
-
-Try the [deployed portfolio](https://archlinux-portafolio.netlify.app/) to use the Gemini assistant or explore the terminal. Run `help` to see available commands, or ask a question such as `ask What projects has Franklin built?`.
+Open the [deployed portfolio](https://archlinux-portafolio.netlify.app/) to explore the desktop and use the Gemini assistant. In the portfolio terminal, run `help` to see available commands, or ask a question such as `ask What projects has Franklin built?`.
 
 ## Deployment
 
