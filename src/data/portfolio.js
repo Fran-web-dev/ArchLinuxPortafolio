@@ -1,15 +1,15 @@
 export const apps = [
   { id: 'about', name: 'About Me', icon: 'user', desc: 'Identity & profile', workspace: 1 },
+  { id: 'contact', name: 'Contact Me', icon: 'mail', desc: 'Get in touch', workspace: 4 },
+  { id: 'github', name: 'GitHub', icon: 'github', desc: 'Profile & repositories', workspace: 3 },
   { id: 'projects', name: 'Projects', icon: 'folder', desc: 'Selected work', workspace: 2 },
+  { id: 'resume', name: 'CV', icon: 'file', desc: 'Curriculum vitae', workspace: 4 },
+  { id: 'skills', name: 'Skills', icon: 'code', desc: 'Tools & technologies', workspace: 4 },
   { id: 'terminal', name: 'Terminal', icon: 'terminal', desc: 'Kitty shell simulator', workspace: 1 },
   { id: 'assistant', name: 'Portfolio AI', icon: 'sparkles', desc: 'Ask about the portfolio', workspace: 1 },
   { id: 'browser', name: 'Browser', icon: 'browser', desc: 'Web browsing', workspace: 3 },
   { id: 'vscode', name: 'VS Code', icon: 'vscode', desc: 'Code editor & projects', workspace: 3 },
   { id: 'spotify', name: 'Spotify', icon: 'spotify', desc: 'Music player', workspace: 3, terminalOnly: true },
-  { id: 'skills', name: 'Skills', icon: 'code', desc: 'Tools & technologies', workspace: 4 },
-  { id: 'github', name: 'GitHub', icon: 'github', desc: 'Profile & repositories', workspace: 3 },
-  { id: 'contact', name: 'Contact', icon: 'mail', desc: 'Get in touch', workspace: 4 },
-  { id: 'resume', name: 'Resume', icon: 'file', desc: 'Curriculum vitae', workspace: 4 },
 ];
 
 // Verified from the portfolio project at D:/Escritorio/Proyects/portfolio/cv.json.
