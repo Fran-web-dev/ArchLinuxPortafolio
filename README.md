@@ -17,6 +17,23 @@
 
 </div>
 
+## Capturas
+
+<table>
+  <tr>
+    <td align="center"><strong>Terminal y fondos</strong><br /><img src="public/terminal-wallpaper-help.png" alt="Ayuda del comando de fondos en la terminal" width="100%" /></td>
+    <td align="center"><strong>Spotify</strong><br /><img src="public/spotify-terminal.png" alt="Reproductor Spotify y terminal en el escritorio" width="100%" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Proyectos</strong><br /><img src="public/projects-terminal.png" alt="Ventana de proyectos y terminal" width="100%" /></td>
+    <td align="center"><strong>VS Code</strong><br /><img src="public/vscode-terminal.png" alt="Editor VS Code simulado y terminal" width="100%" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Asistente en la terminal</strong><br /><img src="public/terminal-profile-command.png" alt="Respuesta de la terminal sobre el perfil" width="100%" /></td>
+    <td align="center"><strong>Comandos de Spotify</strong><br /><img src="public/terminal-spotify-help.png" alt="Ayuda de Spotify en la terminal" width="100%" /></td>
+  </tr>
+</table>
+
 ## Acerca del proyecto
 
 Este portfolio presenta el perfil, la experiencia y los proyectos de **Franklin Villanueva**, desarrollador frontend de Honduras. La interfaz recrea un escritorio inspirado en Arch Linux y Hyprland: las secciones aparecen como aplicaciones en ventanas, distribuidas en cuatro espacios de trabajo.
